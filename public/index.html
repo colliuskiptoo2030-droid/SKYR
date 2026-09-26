@@ -29,8 +29,8 @@
     .page { display: none; }
     .page.active { display: block; }
     
-    /* Layout Grids */
-    .game-layout { display: grid; grid-template-columns: 320px 1fr 280px; gap: 16px; }
+    /* Layout Grids: Game Engine Left, Chat/Bets Center, Stats Right */
+    .game-layout { display: grid; grid-template-columns: 1fr 320px 280px; gap: 16px; }
     .card { background: #101725; border: 1px solid #222c40; border-radius: 15px; padding: 16px; position: relative; }
     
     /* Canvas Game Area */
@@ -149,31 +149,7 @@
       <div class="pills" id="rounds"></div>
 
       <div class="game-layout">
-        <!-- LEFT: SIDEBAR BETS & CHAT -->
-        <div class="card">
-          <div class="sidebar-tabs">
-            <button class="active" id="btnSideBets" onclick="switchSidebar('bets')">Live Bets</button>
-            <button id="btnSideChat" onclick="switchSidebar('chat')">Live Chat</button>
-          </div>
-          
-          <div id="sideBets">
-            <div class="live-bets-header">
-              <span id="activePlayerCount">0 Bets</span>
-              <span id="activePlayerSum">KSh 0</span>
-            </div>
-            <div id="playerList" class="list-box"></div>
-          </div>
-
-          <div id="sideChat" class="chat-box" style="display: none;">
-            <div class="chat-messages" id="chatMsgs"></div>
-            <div class="chat-input">
-              <input id="chatInput" placeholder="Say something...">
-              <button class="navbtn primary">Send</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- CENTER: CANVAS & DUAL BET CONTROLS -->
+        <!-- FIRST: PLANE ENGINE & DUAL BET CONTROLS -->
         <div>
           <div class="game-container">
             <canvas id="gameCanvas"></canvas>
@@ -216,7 +192,31 @@
           </div>
         </div>
 
-        <!-- RIGHT: STATS & USER INFO -->
+        <!-- SECOND: LIVE CHAT & LIVE BETS PANEL -->
+        <div class="card">
+          <div class="sidebar-tabs">
+            <button class="active" id="btnSideChat" onclick="switchSidebar('chat')">Live Chat</button>
+            <button id="btnSideBets" onclick="switchSidebar('bets')">Live Bets</button>
+          </div>
+          
+          <div id="sideChat" class="chat-box">
+            <div class="chat-messages" id="chatMsgs"></div>
+            <div class="chat-input">
+              <input id="chatInput" placeholder="Say something...">
+              <button class="navbtn primary">Send</button>
+            </div>
+          </div>
+
+          <div id="sideBets" style="display: none;">
+            <div class="live-bets-header">
+              <span id="activePlayerCount">0 Bets</span>
+              <span id="activePlayerSum">KSh 0</span>
+            </div>
+            <div id="playerList" class="list-box"></div>
+          </div>
+        </div>
+
+        <!-- THIRD: SESSION SUMMARY & USER INFO -->
         <div class="card">
           <h3>Session Summary</h3>
           <div class="row"><span>Demo Balance</span><b id="bal">KSh 1,000.00</b></div>
