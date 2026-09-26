@@ -45,7 +45,7 @@ app.post('/api/mpesa/stkpush', async (req, res) => {
             return res.status(400).json({ error: "Phone number and amount are required." });
         }
 
-        // Format phone number to 2547XXXXXXXX
+        // Format phone number to 2547XXXXXXXX or 2541XXXXXXXX format
         let formattedPhone = phone.toString().trim().replace('+', '');
         if (formattedPhone.startsWith('0')) {
             formattedPhone = '254' + formattedPhone.slice(1);
@@ -58,25 +58,35 @@ app.post('/api/mpesa/stkpush', async (req, res) => {
         const payload = {
             api_key: process.env.MEGAPAY_API_KEY,
             email: process.env.MEGAPAY_EMAIL,
-            phone: formattedPhone,
             amount: Math.round(Number(amount)),
-            reference: userId || `USER_${formattedPhone}`,
-            callback: `${process.env.APP_URL || 'http://localhost:3000'}/api/mpesa/callback`
+            msisdn: formattedPhone,
+            reference: userId || `USER_${formattedPhone}`
         };
 
-        const response = await fetch('https://megapay.co.ke/backend/initiatestk', {
+        const response = await fetch('https://megapay.co.ke/backend/v1/initiatestk', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
+        const rawText = await response.text();
+        console.log("RAW MEGAPAY RESPONSE:", rawText);
 
-        console.log("✅ MegaPay STK Push Response:", data);
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch (parseErr) {
+            console.error("Non-JSON response received from MegaPay:", rawText);
+            return res.status(502).json({
+                error: "MegaPay server returned an HTML error or invalid response.",
+                raw: rawText.substring(0, 200)
+            });
+        }
 
-        if (data.status === 'success' || data.ResponseCode === 0) {
+        if (data.status === 'success' || data.ResponseCode === 0 || data.ResponseCode === "0") {
             return res.status(200).json({
                 success: true,
                 message: "STK Push prompt sent to your phone.",
@@ -84,7 +94,7 @@ app.post('/api/mpesa/stkpush', async (req, res) => {
             });
         } else {
             return res.status(400).json({
-                error: data.message || data.ResponseDescription || "STK Push request failed."
+                error: data.message || data.massage || data.ResponseDescription || "STK Push request failed."
             });
         }
 
@@ -142,7 +152,6 @@ app.post('/api/mpesa/callback', (req, res) => {
 
     const payload = req.body;
 
-    // Check if payment was successful (ResponseCode === 0 or status success)
     if (payload.ResponseCode === 0 || payload.status === 'success') {
         const amount = Number(payload.TransactionAmount || payload.amount);
         const receipt = payload.TransactionReceipt || payload.checkout_id;
