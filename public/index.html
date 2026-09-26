@@ -279,8 +279,8 @@
       <h2>Deposit via M-Pesa</h2>
       <label style="font-size: 12px; color: #aeb8c9;">Phone Number</label>
       <input id="stkPhone" type="text" placeholder="254700000000" value="254700000000">
-      <label style="font-size: 12px; color: #aeb8c9;">Amount (Min KSh 20)</label>
-      <input id="stkAmount" type="number" min="20" value="20">
+      <label style="font-size: 12px; color: #aeb8c9;">Amount (Min KSh 100)</label>
+      <input id="stkAmount" type="number" min="100" value="100">
       <button class="btn btn-bet" id="stkBtn" style="width: 100%; margin-top: 10px;" onclick="sendPaymentRequest()">Send STK Push</button>
       <p id="stkMsg" style="margin-top: 12px; font-size: 13px; text-align: center; font-weight: 600;"></p>
     </div>
@@ -524,10 +524,10 @@
         return alert('Please enter a valid phone number.');
       }
 
-      if (isNaN(amount) || amount < 20) {
+      if (isNaN(amount) || amount < 100) {
         msgEl.style.color = '#ff3d71';
-        msgEl.textContent = 'Minimum deposit amount is KSh 20.';
-        return alert('Minimum deposit amount is KSh 20.');
+        msgEl.textContent = 'Minimum deposit amount is KSh 100.';
+        return alert('Minimum deposit amount is KSh 100.');
       }
 
       btn.disabled = true;
