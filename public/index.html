@@ -19,7 +19,11 @@
     .navbtn:hover { background: #222c40; }
     .navbtn.primary { background: #ff3d71; border-color: #ff3d71; }
     .navbtn.withdraw { background: #ffb62e; color: #070a12; border-color: #ffb62e; font-weight: 700; }
+    .navbtn.danger { background: #ff3d71; color: #fff; border-color: #ff3d71; }
     
+    .user-profile-badge { display: flex; align-items: center; gap: 8px; background: #182236; border: 1px solid #2a3752; padding: 6px 12px; border-radius: 9px; font-weight: 700; font-size: 13px; color: #22d39a; }
+    .user-profile-badge .user-name { color: #fff; }
+
     .wrap { max-width: 1400px; margin: 20px auto; padding: 0 16px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .tabs button { background: #111725; color: #aeb8c9; border: 1px solid #252f43; padding: 10px 16px; border-radius: 9px; cursor: pointer; font-weight: 600; }
@@ -91,8 +95,10 @@
     .modal.active { display: flex; }
     .modal-card { background: #101725; border: 1px solid #28354d; border-radius: 16px; width: 100%; max-width: 400px; padding: 24px; position: relative; }
     .modal-card h2 { margin-top: 0; font-size: 20px; }
-    .modal-card input { width: 100%; padding: 11px; margin: 8px 0; background: #182236; border: 1px solid #2a3752; border-radius: 8px; color: white; }
+    .modal-card label { display: block; font-size: 12px; color: #aeb8c9; margin-top: 8px; }
+    .modal-card input { width: 100%; padding: 11px; margin: 4px 0 8px 0; background: #182236; border: 1px solid #2a3752; border-radius: 8px; color: white; }
     .close-modal { position: absolute; top: 16px; right: 16px; background: transparent; border: 0; color: #7e8ba1; font-size: 18px; cursor: pointer; }
+    .modal-msg { margin-top: 10px; font-size: 13px; text-align: center; font-weight: 600; }
     
     .statgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 15px; }
     .stat { background: #171f2e; border: 1px solid #29354a; padding: 15px; border-radius: 11px; }
@@ -120,9 +126,24 @@
       <button class="navbtn" onclick="openModal('depositModal')">💳 M-Pesa Deposit</button>
       <button class="navbtn withdraw" onclick="openModal('withdrawModal')">💸 Withdraw</button>
       <button class="navbtn" id="soundBtn" onclick="toggleSound()">🔊 Sound On</button>
-      <span id="userLabel" style="font-weight: 700; color: #aeb8c9; margin-right: 4px;">Guest</span> 
-      <button class="navbtn" id="loginNavBtn" onclick="openModal('loginModal')">Login</button>
-      <button class="navbtn primary" id="regNavBtn" onclick="openModal('regModal')">Register</button>
+      
+      <!-- LOGGED OUT NAV ELEMENTS -->
+      <div id="loggedOutNav" style="display: flex; gap: 8px; align-items: center;">
+        <span style="font-weight: 700; color: #aeb8c9; margin-right: 4px;">Guest</span> 
+        <button class="navbtn" id="loginNavBtn" onclick="openModal('loginModal')">Login</button>
+        <button class="navbtn primary" id="regNavBtn" onclick="openModal('regModal')">Register</button>
+      </div>
+
+      <!-- LOGGED IN NAV ELEMENTS -->
+      <div id="loggedInNav" style="display: none; gap: 8px; align-items: center;">
+        <div class="user-profile-badge">
+          <span>👤</span>
+          <span class="user-name" id="navUserName">User</span>
+          <span style="color: #7e8ba1;">|</span>
+          <span id="navUserBalance">KSh 1,000.00</span>
+        </div>
+        <button class="navbtn danger" onclick="handleLogout()">Logout</button>
+      </div>
     </div>
   </nav>
 
@@ -203,7 +224,7 @@
             <div class="chat-messages" id="chatMsgs"></div>
             <div class="chat-input">
               <input id="chatInput" placeholder="Say something...">
-              <button class="navbtn primary">Send</button>
+              <button class="navbtn primary" onclick="sendChatMessage()">Send</button>
             </div>
           </div>
 
@@ -277,12 +298,12 @@
     <div class="modal-card">
       <button class="close-modal" onclick="closeModal('depositModal')">✕</button>
       <h2>Deposit via M-Pesa</h2>
-      <label style="font-size: 12px; color: #aeb8c9;">Phone Number</label>
+      <label>Phone Number</label>
       <input id="stkPhone" type="text" placeholder="254700000000" value="254700000000">
-      <label style="font-size: 12px; color: #aeb8c9;">Amount (Min KSh 100)</label>
+      <label>Amount (Min KSh 100)</label>
       <input id="stkAmount" type="number" min="100" value="100">
       <button class="btn btn-bet" id="stkBtn" style="width: 100%; margin-top: 10px;" onclick="sendPaymentRequest()">Send STK Push</button>
-      <p id="stkMsg" style="margin-top: 12px; font-size: 13px; text-align: center; font-weight: 600;"></p>
+      <p id="stkMsg" class="modal-msg"></p>
     </div>
   </div>
 
@@ -291,15 +312,16 @@
     <div class="modal-card">
       <button class="close-modal" onclick="closeModal('withdrawModal')">✕</button>
       <h2>Withdraw Funds</h2>
-      <label style="font-size: 12px; color: #aeb8c9;">M-Pesa Phone Number</label>
+      <label>M-Pesa Phone Number</label>
       <input id="withdrawPhone" type="text" placeholder="254700000000" value="254700000000">
-      <label style="font-size: 12px; color: #aeb8c9;">Amount (KSh)</label>
+      <label>Amount (KSh)</label>
       <input id="withdrawAmount" type="number" min="50" value="100">
       <button class="btn btn-cash" id="withdrawBtn" style="width: 100%; margin-top: 10px; font-weight: 800;" onclick="handleWithdrawal()">Request Withdrawal</button>
-      <p id="withdrawMsg" style="margin-top: 12px; font-size: 13px; text-align: center; font-weight: 600;"></p>
+      <p id="withdrawMsg" class="modal-msg"></p>
     </div>
   </div>
 
+  <!-- LOGIN MODAL -->
   <div class="modal" id="loginModal">
     <div class="modal-card">
       <button class="close-modal" onclick="closeModal('loginModal')">✕</button>
@@ -308,10 +330,12 @@
       <input id="loginEmail" type="email" placeholder="Enter your email">
       <label>Password</label>
       <input id="loginPass" type="password" placeholder="Enter your password">
-      <button class="btn btn-bet" style="width:100%; margin-top:10px;">Login</button>
+      <button class="btn btn-bet" style="width:100%; margin-top:10px;" onclick="handleLogin()">Login</button>
+      <p id="loginMsg" class="modal-msg"></p>
     </div>
   </div>
 
+  <!-- REGISTER MODAL -->
   <div class="modal" id="regModal">
     <div class="modal-card">
       <button class="close-modal" onclick="closeModal('regModal')">✕</button>
@@ -322,7 +346,8 @@
       <input id="regEmail" type="email" placeholder="Enter your email">
       <label>Password</label>
       <input id="regPass" type="password" placeholder="Create a password">
-      <button class="btn btn-bet" style="width:100%;margin-top:10px;">Create Account</button>
+      <button class="btn btn-bet" style="width:100%;margin-top:10px;" onclick="handleRegister()">Create Account</button>
+      <p id="regMsg" class="modal-msg"></p>
     </div>
   </div>
 
@@ -349,6 +374,7 @@
     let avatarChoice = '✈️';
     let soundEnabled = true;
     let liveBots = [];
+    let currentUser = null;
 
     const botAvatars = ['👨‍💼', '👩‍💻', '🚀', '🦊', '🐯', '🦁', '⚡', '👑', '🎲', '💎', '🔥', '🎮'];
     const botPrefixes = ['Ken', 'Alex', 'Brian', 'Dave', 'Sam', 'Grace', 'Mercy', 'John', 'Paul', 'Mike', 'Stacy', 'Chris', 'Victor', 'Otieno', 'Kip'];
@@ -369,6 +395,7 @@
       initStars();
     }
     window.addEventListener('resize', resizeCanvas);
+    setTimeout(resizeCanvas, 100);
 
     function initStars() {
       stars = [];
@@ -417,6 +444,32 @@
     const $ = id => document.getElementById(id);
     const money = x => 'KSh ' + Number(x).toFixed(2);
 
+    function renderUI() {
+      if ($('bal')) $('bal').textContent = money(balance);
+      if ($('wbal')) $('wbal').textContent = money(balance);
+      if ($('wdep')) $('wdep').textContent = money(totalDeposited);
+      if ($('wout')) $('wout').textContent = money(totalWithdrawn);
+      if ($('navUserBalance')) $('navUserBalance').textContent = money(balance);
+      
+      let totBetVal = (bets[1].active ? bets[1].amount : 0) + (bets[2].active ? bets[2].amount : 0);
+      if ($('totBet')) $('totBet').textContent = money(totBetVal);
+      
+      let currentProf = (bets[1].cashed ? bets[1].payout - bets[1].amount : 0) + (bets[2].cashed ? bets[2].payout - bets[2].amount : 0);
+      if ($('totProfit')) $('totProfit').textContent = money(currentProf);
+
+      if ($('adminRounds')) $('adminRounds').textContent = roundNo;
+      if ($('adminVol')) $('adminVol').textContent = money(volume);
+
+      // Save user state in local storage if logged in
+      if (currentUser) {
+        currentUser.balance = balance;
+        currentUser.totalDeposited = totalDeposited;
+        currentUser.totalWithdrawn = totalWithdrawn;
+        localStorage.setItem('skyrush_current_user', JSON.stringify(currentUser));
+        updateUserInDatabase(currentUser);
+      }
+    }
+
     function show(pageId) {
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       $(pageId).classList.add('active');
@@ -434,6 +487,137 @@
       } else {
         $('sideBets').style.display = 'none'; $('sideChat').style.display = 'flex';
         $('btnSideChat').classList.add('active'); $('btnSideBets').classList.remove('active');
+      }
+    }
+
+    // ==========================================
+    // USER AUTHENTICATION & PROFILE ENGINE
+    // ==========================================
+    function getUsersDB() {
+      return JSON.parse(localStorage.getItem('skyrush_users_db') || '{}');
+    }
+
+    function saveUsersDB(db) {
+      localStorage.setItem('skyrush_users_db', JSON.stringify(db));
+    }
+
+    function updateUserInDatabase(user) {
+      let db = getUsersDB();
+      if (db[user.email]) {
+        db[user.email] = user;
+        saveUsersDB(db);
+      }
+    }
+
+    function handleRegister() {
+      const name = $('regName').value.trim();
+      const email = $('regEmail').value.trim().toLowerCase();
+      const pass = $('regPass').value;
+      const msg = $('regMsg');
+
+      if (!name || !email || !pass) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Please fill in all fields.';
+        return;
+      }
+
+      let db = getUsersDB();
+      if (db[email]) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'An account with this email already exists.';
+        return;
+      }
+
+      const newUser = {
+        name,
+        email,
+        pass,
+        balance: 1000,
+        totalDeposited: 0,
+        totalWithdrawn: 0
+      };
+
+      db[email] = newUser;
+      saveUsersDB(db);
+
+      msg.style.color = '#22d39a';
+      msg.textContent = 'Account created successfully! Logging you in...';
+
+      setTimeout(() => {
+        closeModal('regModal');
+        msg.textContent = '';
+        loginUserSession(newUser);
+      }, 1000);
+    }
+
+    function handleLogin() {
+      const email = $('loginEmail').value.trim().toLowerCase();
+      const pass = $('loginPass').value;
+      const msg = $('loginMsg');
+
+      if (!email || !pass) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Please enter email and password.';
+        return;
+      }
+
+      let db = getUsersDB();
+      const user = db[email];
+
+      if (!user || user.pass !== pass) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Invalid email or password.';
+        return;
+      }
+
+      msg.style.color = '#22d39a';
+      msg.textContent = 'Login successful!';
+
+      setTimeout(() => {
+        closeModal('loginModal');
+        msg.textContent = '';
+        loginUserSession(user);
+      }, 800);
+    }
+
+    function loginUserSession(user) {
+      currentUser = user;
+      localStorage.setItem('skyrush_current_user', JSON.stringify(user));
+      
+      balance = user.balance || 1000;
+      totalDeposited = user.totalDeposited || 0;
+      totalWithdrawn = user.totalWithdrawn || 0;
+
+      $('loggedOutNav').style.display = 'none';
+      $('loggedInNav').style.display = 'flex';
+      $('navUserName').textContent = user.name;
+      
+      renderUI();
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem('skyrush_current_user');
+      
+      $('loggedOutNav').style.display = 'flex';
+      $('loggedInNav').style.display = 'none';
+      
+      // Reset to Guest values
+      balance = 1000;
+      totalDeposited = 0;
+      totalWithdrawn = 0;
+      renderUI();
+    }
+
+    function initAuthCheck() {
+      const saved = localStorage.getItem('skyrush_current_user');
+      if (saved) {
+        try {
+          const user = JSON.parse(saved);
+          loginUserSession(user);
+        } catch (e) {
+          localStorage.removeItem('skyrush_current_user');
+        }
       }
     }
 
@@ -509,6 +693,24 @@
       container.innerHTML = html;
       $('activePlayerCount').textContent = `${liveBots.length} Bets`;
       $('activePlayerSum').textContent = money(totalStakes);
+    }
+
+    function sendChatMessage() {
+      const input = $('chatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const senderName = currentUser ? currentUser.name : 'Guest';
+      const msgsBox = $('chatMsgs');
+      
+      const el = document.createElement('div');
+      el.style.fontSize = '12px';
+      el.style.padding = '4px 0';
+      el.innerHTML = `<strong style="color: #22d39a;">${senderName}:</strong> <span style="color: #eef2f8;">${msg}</span>`;
+      
+      msgsBox.appendChild(el);
+      msgsBox.scrollTop = msgsBox.scrollHeight;
+      input.value = '';
     }
 
     // ==========================================
@@ -711,107 +913,83 @@
           $(`p${p}Status`).textContent = 'Queued';
           $(`p${p}Status`).style.color = '#ffb62e';
           renderUI();
-        } else {
-          balance += b.amount; volume -= b.amount;
-          b.active = false;
-          $(`p${p}Status`).textContent = '—';
-          renderUI();
         }
       }
     }
 
-    function addHistory(panel, betAmt, res, payout) {
-      $('hist').insertAdjacentHTML('afterbegin', 
-        `<tr><td>#${roundNo}</td><td>Panel ${panel}</td><td>${money(betAmt)}</td><td><span class="${payout>0?'badge-win':'badge-loss'}">${res}</span></td><td>${money(payout)}</td></tr>`
-      );
+    function addHistory(panel, amount, result, payout) {
+      const tbody = $('hist');
+      if (!tbody) return;
+      const row = document.createElement('tr');
+      const isWin = payout > 0;
+      row.innerHTML = `
+        <td>#${roundNo}</td>
+        <td>Panel ${panel}</td>
+        <td>${money(amount)}</td>
+        <td class="${isWin ? 'badge-win' : 'badge-loss'}">${result}</td>
+        <td>${money(payout)}</td>
+      `;
+      tbody.prepend(row);
     }
 
-    function renderUI() {
-      $('bal').textContent = money(balance);$('wbal').textContent = money(balance);
-      $('wdep').textContent = money(totalDeposited);$('wout').textContent = money(totalWithdrawn);
-      
-      let totalActive = (bets[1].active && !bets[1].cashed ? bets[1].amount : 0) + (bets[2].active && !bets[2].cashed ? bets[2].amount : 0);
-      $('totBet').textContent = money(totalActive);$('totProfit').textContent = money((bets[1].payout + bets[2].payout));
-
-      if (inRound) {
-        if (bets[1].active && !bets[1].cashed) {
-          $('b1Btn').className = 'btn btn-cash';$('b1Btn').textContent = `CASH OUT (${money(bets[1].amount * mult)})`;
-          $('b1Btn').disabled = false;
-        } else {
-          $('b1Btn').className = 'btn btn-bet';
-          $('b1Btn').textContent = 'IN ROUND';$('b1Btn').disabled = true;
-        }
-      } else {
-        $('b1Btn').disabled = false;
-        $('b1Btn').className = bets[1].active ? 'btn btn-cash' : 'btn btn-bet';
-        $('b1Btn').textContent = bets[1].active ? 'CANCEL' : 'PLACE BET';
-      }
-
-      if (inRound) {
-        if (bets[2].active && !bets[2].cashed) {
-          $('b2Btn').className = 'btn btn-cash';$('b2Btn').textContent = `CASH OUT (${money(bets[2].amount * mult)})`;
-          $('b2Btn').disabled = false;
-        } else {
-          $('b2Btn').className = 'btn btn-bet';
-          $('b2Btn').textContent = 'IN ROUND';$('b2Btn').disabled = true;
-        }
-      } else {
-        $('b2Btn').disabled = false;
-        $('b2Btn').className = bets[2].active ? 'btn btn-cash' : 'btn btn-bet';
-        $('b2Btn').textContent = bets[2].active ? 'CANCEL' : 'PLACE BET';
-      }
-
-      $('adminRounds').textContent = roundNo;
-      $('adminVol').textContent = money(volume);
-    }
-
-    function drawGameScene(progressPct, crashed) {
+    // ==========================================
+    // CANVAS RENDERING & ANIMATION SYSTEM
+    // ==========================================
+    function drawGameScene(progress, crashed) {
+      if (!canvas.width || !canvas.height) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#ffffff';
+      // Background Starfield
+      ctx.fillStyle = '#101726';
       stars.forEach(s => {
-        s.y += s.speed;
-        if (s.y > canvas.height) s.y = 0;
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill();
+        s.x -= s.speed;
+        if (s.x < 0) s.x = canvas.width;
+        ctx.fillRect(s.x, s.y, s.size, s.size);
       });
 
-      let startX = 50, startY = canvas.height - 50;
-      let targetX = canvas.width * 0.8;
-      let targetY = canvas.height * 0.25;
+      const startX = 40;
+      const startY = canvas.height - 40;
+      const endX = startX + (canvas.width - 80) * Math.min(progress, 0.9);
+      const endY = startY - (canvas.height - 100) * Math.min(progress, 0.85);
 
-      let currentX = startX + (targetX - startX) * progressPct;
-      let currentY = startY - (startY - targetY) * progressPct;
-
+      // Curved Trajectory Line
       ctx.beginPath();
       ctx.moveTo(startX, startY);
-      ctx.quadraticCurveTo(startX + (currentX - startX) * 0.5, startY, currentX, currentY);
-      ctx.strokeStyle = crashed ? '#ff3d71' : '#22d39a';
+      ctx.quadraticCurveTo((startX + endX) / 2, startY, endX, endY);
       ctx.lineWidth = 4;
-      ctx.shadowBlur = 12; ctx.shadowColor = ctx.strokeStyle;
+      ctx.strokeStyle = crashed ? '#ff3d71' : '#22d39a';
       ctx.stroke();
-      ctx.shadowBlur = 0;
 
-      if (inRound && !crashed) {
-        particles.push({ x: currentX - 10, y: currentY + 10, size: Math.random() * 8 + 4, opacity: 1 });
+      // Render Avatar Flight Object
+      if (!crashed) {
+        ctx.font = '32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(avatarChoice, endX, endY);
+
+        // Exhaust Particles
+        particles.push({ x: endX - 10, y: endY + 10, size: Math.random() * 4 + 2, alpha: 1 });
       }
 
-      particles.forEach((p, idx) => {
-        p.opacity -= 0.02;
-        p.x -= 1; p.y += 0.5;
-        ctx.fillStyle = crashed ? `rgba(255, 61, 113, ${p.opacity})` : `rgba(255, 255, 255, ${p.opacity})`;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
-        if (p.opacity <= 0) particles.splice(idx, 1);
-      });
-
-      ctx.font = '36px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(avatarChoice, currentX, currentY);
+      // Render Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        ctx.fillStyle = `rgba(255, 182, 46, ${p.alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        p.x -= 1.5;
+        p.y += 0.5;
+        p.alpha -= 0.03;
+        if (p.alpha <= 0) particles.splice(i, 1);
+      }
     }
 
+    // Initialize Page
     window.addEventListener('load', () => {
       resizeCanvas();
-      generateLiveBots();
+      initAuthCheck();
+      renderUI();
     });
   </script>
 </body>
