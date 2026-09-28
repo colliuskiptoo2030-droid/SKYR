@@ -714,360 +714,282 @@
     }
 
     // ==========================================
-    // M-PESA STK PUSH API & WITHDRAWAL LOGIC
+    // M-PESA STK PUSH API & SOCKET LISTENER
     // ==========================================
     async function sendPaymentRequest() {
       const phone = document.getElementById('stkPhone').value;
       const amount = parseFloat(document.getElementById('stkAmount').value);
-      const msg = document.getElementById('stkMsg');
+      const msgEl = document.getElementById('stkMsg');
+      const btn = document.getElementById('stkBtn');
 
-      if (!phone || amount < 100) {
-        msg.style.color = '#ff3d71';
-        msg.textContent = 'Enter a valid phone number and minimum KSh 100.';
-        return;
+      if (!phone) {
+        return alert('Please enter a valid phone number.');
       }
 
-      msg.style.color = '#ffb62e';
-      msg.textContent = 'Initiating STK Push... Check your phone.';
+      if (isNaN(amount) || amount < 100) {
+        msgEl.style.color = '#ff3d71';
+        msgEl.textContent = 'Minimum deposit amount is KSh 100.';
+        return alert('Minimum deposit amount is KSh 100.');
+      }
+
+      btn.disabled = true;
+      msgEl.style.color = '#ffb62e';
+      msgEl.textContent = 'Sending STK Push prompt to your phone...';
 
       try {
-        const response = await fetch('/api/stkpush', {
+        const res = await fetch('/api/mpesa/stkpush', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone, amount })
         });
-        const data = await response.json();
 
-        if (response.ok) {
-          msg.style.color = '#22d39a';
-          msg.textContent = 'STK Sent! Funds will reflect upon PIN entry.';
-          balance += amount;
-          totalDeposited += amount;
-          renderUI();
-          setTimeout(() => closeModal('depositModal'), 2000);
+        const data = await res.json();
+
+        if (data.success) {
+          msgEl.style.color = '#22d39a';
+          msgEl.textContent = 'Prompt sent! Enter your M-Pesa PIN on your phone.';
         } else {
-          throw new Error(data.message || 'STK Push failed');
+          msgEl.style.color = '#ff3d71';
+          msgEl.textContent = data.error || 'Failed to trigger payment.';
         }
       } catch (err) {
-        // Fallback simulation if backend endpoint is absent
-        setTimeout(() => {
-          msg.style.color = '#22d39a';
-          msg.textContent = 'Demo Deposit Successful!';
-          balance += amount;
-          totalDeposited += amount;
-          renderUI();
-          setTimeout(() => closeModal('depositModal'), 1500);
-        }, 1200);
+        msgEl.style.color = '#ff3d71';
+        msgEl.textContent = 'Network error sending request.';
+      } finally {
+        btn.disabled = false;
       }
     }
 
-    async function handleWithdrawal() {
-      const phone = document.getElementById('withdrawPhone').value;
-      const amount = parseFloat(document.getElementById('withdrawAmount').value);
-      const msg = document.getElementById('withdrawMsg');
+    // ==========================================
+    // SIMULATED M-PESA WITHDRAWAL SYSTEM
+    // ==========================================
+    function handleWithdrawal() {
+      const phone = $('withdrawPhone').value;
+      const amount = parseFloat($('withdrawAmount').value);
+      const msgEl = $('withdrawMsg');
+      const btn = $('withdrawBtn');
 
-      if (!phone || amount < 50) {
-        msg.style.color = '#ff3d71';
-        msg.textContent = 'Enter a valid phone number and minimum KSh 50.';
+      if (!phone) return alert('Please enter your M-Pesa phone number.');
+      if (isNaN(amount) || amount < 50) {
+        msgEl.style.color = '#ff3d71';
+        msgEl.textContent = 'Minimum withdrawal amount is KSh 50.';
         return;
       }
 
       if (amount > balance) {
-        msg.style.color = '#ff3d71';
-        msg.textContent = 'Insufficient balance for this withdrawal.';
+        msgEl.style.color = '#ff3d71';
+        msgEl.textContent = 'Insufficient balance for this withdrawal.';
         return;
       }
 
-      msg.style.color = '#ffb62e';
-      msg.textContent = 'Processing payout request...';
+      btn.disabled = true;
+      msgEl.style.color = '#ffb62e';
+      msgEl.textContent = 'Processing M-Pesa transfer...';
 
       setTimeout(() => {
         balance -= amount;
         totalWithdrawn += amount;
         renderUI();
-        msg.style.color = '#22d39a';
-        msg.textContent = 'Withdrawal request submitted successfully!';
-        setTimeout(() => closeModal('withdrawModal'), 1500);
-      }, 1000);
+
+        const fakeReceipt = 'WS' + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        msgEl.style.color = '#22d39a';
+        msgEl.textContent = `✅ KSh ${amount} sent to ${phone} (Ref: ${fakeReceipt})`;
+
+        setTimeout(() => {
+          closeModal('withdrawModal');
+          msgEl.textContent = '';
+          btn.disabled = false;
+          alert(`✅ Success! KSh ${amount} has been processed to ${phone}.\nM-Pesa Ref: ${fakeReceipt}`);
+        }, 1500);
+
+      }, 2000);
     }
 
-    // ==========================================
-    // BETTING & GAMEPLAY LOGIC
-    // ==========================================
-    function handleBetAction(panelId) {
-      const b = bets[panelId];
-      const btn = $(`b${panelId}Btn`);
-
-      if (!b.active) {
-        // Place Bet
-        const amtInput = $(`b${panelId}Amount`);
-        const amt = parseFloat(amtInput.value);
-
-        if (isNaN(amt) || amt < 10) {
-          alert('Minimum bet amount is KSh 10');
-          return;
-        }
-
-        if (amt > balance) {
-          alert('Insufficient balance to place bet');
-          return;
-        }
-
-        balance -= amt;
-        volume += amt;
-        b.active = true;
-        b.cashed = false;
-        b.amount = amt;
-        b.payout = 0;
-
-        playSound('bet');
-        $(`p1Status`).textContent = panelId === 1 ? 'WAITING NEXT ROUND' : $('p1Status').textContent;
-        $(`p2Status`).textContent = panelId === 2 ? 'WAITING NEXT ROUND' : $('p2Status').textContent;
-
-        if (inRound) {
-          btn.textContent = 'BET PLACED (NEXT ROUND)';
-          btn.disabled = true;
-        } else {
-          btn.textContent = 'CANCEL BET';
-          btn.classList.remove('btn-bet');
-          btn.classList.add('btn-cash');
-        }
-        renderUI();
-      } else if (!inRound) {
-        // Cancel Bet before round starts
-        balance += b.amount;
-        volume -= b.amount;
-        b.active = false;
-        $(`p${panelId}Status`).textContent = '—';
-        btn.textContent = 'PLACE BET';
-        btn.classList.remove('btn-cash');
-        btn.classList.add('btn-bet');
-        renderUI();
-      } else if (!b.cashed) {
-        // Manual Cashout during round
-        cashoutPanel(panelId);
-      }
-    }
-
-    function cashoutPanel(panelId) {
-      const b = bets[panelId];
-      if (!b.active || b.cashed || !inRound) return;
-
-      b.cashed = true;
-      b.payout = b.amount * mult;
-      balance += b.payout;
-
-      playSound('win');
-      const btn = $(`b${panelId}Btn`);
-      btn.textContent = `CASHED OUT (${mult.toFixed(2)}x)`;
-      btn.disabled = true;
-      $(`p${panelId}Status`).textContent = `WON ${money(b.payout)}`;
-
-      addHistoryRecord(panelId, b.amount, `${mult.toFixed(2)}x`, b.payout);
+    // Listen for real-time M-Pesa payment confirmation from server
+    socket.on('deposit_success', (data) => {
+      balance += parseFloat(data.amount);
+      totalDeposited += parseFloat(data.amount);
       renderUI();
-    }
+      closeModal('depositModal');
+      alert(`🎉 Payment of KSh ${data.amount} received! (Ref: ${data.receipt})`);
+    });
 
-    function addHistoryRecord(panel, betVal, res, payoutVal) {
-      const tbody = $('hist');
-      if (!tbody) return;
-      const tr = document.createElement('tr');
-      const win = payoutVal > 0;
-      tr.innerHTML = `
-        <td>#${roundNo}</td>
-        <td>Panel ${panel}</td>
-        <td>${money(betVal)}</td>
-        <td class="${win ? 'badge-win' : 'badge-loss'}">${res}</td>
-        <td>${money(payoutVal)}</td>
-      `;
-      tbody.prepend(tr);
-    }
-
-    function addPill(multiplier) {
-      const container = $('rounds');
-      if (!container) return;
-      const pill = document.createElement('div');
-      const val = parseFloat(multiplier);
-      pill.className = `pill ${val >= 2.0 ? 'hot' : ''}`;
-      pill.textContent = `${val.toFixed(2)}x`;
-      container.prepend(pill);
-
-      if (container.children.length > 15) {
-        container.removeChild(container.lastChild);
-      }
-    }
+    // Listen for real-time withdrawal updates
+    socket.on('withdraw_success', (data) => {
+      renderUI();
+    });
 
     // ==========================================
-    // CANVAS ANIMATION ENGINE
-    // ==========================================
-    let animX = 0, animY = canvas.height;
-
-    function renderCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw background space & moving stars
-      ctx.fillStyle = '#090e18';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      stars.forEach(s => {
-        ctx.fillRect(s.x, s.y, s.size, s.size);
-        if (inRound) {
-          s.x -= s.speed * (mult * 0.5);
-          if (s.x < 0) s.x = canvas.width;
-        }
-      });
-
-      if (inRound) {
-        const progress = Math.min((mult - 1) / 5, 1);
-        const targetX = canvas.width * 0.15 + (canvas.width * 0.7 * progress);
-        const targetY = canvas.height * 0.85 - (canvas.height * 0.65 * progress);
-
-        animX += (targetX - animX) * 0.1;
-        animY += (targetY - animY) * 0.1;
-
-        // Draw Flight Curve
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height);
-        ctx.quadraticCurveTo(animX * 0.5, canvas.height, animX, animY);
-        ctx.strokeStyle = '#ff3d71';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        // Gradient below line
-        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grad.addColorStop(0, 'rgba(255, 61, 113, 0.35)');
-        grad.addColorStop(1, 'rgba(255, 61, 113, 0.0)');
-        ctx.lineTo(animX, canvas.height);
-        ctx.lineTo(0, canvas.height);
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        // Render Flying Avatar
-        ctx.font = '36px sans-serif';
-        ctx.fillText(avatarChoice, animX - 18, animY + 12);
-      } else {
-        animX = 0;
-        animY = canvas.height;
-      }
-
-      requestAnimationFrame(renderCanvas);
-    }
-
-    // ==========================================
-    // SOCKET REAL-TIME LISTENERS & CLIENT LOGIC
+    // SERVER SOCKET ENGINE CONNECTIVITY
     // ==========================================
     socket.on('connect', () => {
-      $('stateBadge').textContent = 'Connected & Synced';$('stateBadge').style.borderColor = '#22d39a';
+      $('stateBadge').textContent = 'Connected & Active';$('stateBadge').style.color = '#22d39a';
     });
 
-    socket.on('disconnect', () => {
-      $('stateBadge').textContent = 'Reconnecting...';$('stateBadge').style.borderColor = '#ff3d71';
-    });
-
-    socket.on('game_start', () => {
-      roundNo++;
+    socket.on('game_start', (data) => {
       inRound = true;
+      roundNo++;
       mult = 1.00;
-
-      $('mult').classList.remove('crashed');$('stateBadge').textContent = 'FLEW OFF!';
       generateLiveBots();
+      $('mult').classList.remove('crashed');$('mult').textContent = '1.00x';
+      $('stateBadge').textContent = 'FLIGHT IN PROGRESS';$('stateBadge').style.color = '#22d39a';
 
-      [1, 2].forEach(i => {
-        const b = bets[i];
-        const btn = $(`b${i}Btn`);
-        if (b.active) {
-          btn.textContent = `CASHOUT (${money(b.amount)})`;
-          btn.classList.remove('btn-bet');
-          btn.classList.add('btn-cash');
-          btn.disabled = false;
-          $(`p${i}Status`).textContent = 'IN FLIGHT';
-        } else {
-          btn.disabled = true;
+      [1, 2].forEach(p => {
+        if (bets[p].active) {
+          $(`p${p}Status`).textContent = 'In Flight';
+          $(`p${p}Status`).style.color = '#22d39a';
         }
       });
       renderUI();
     });
 
-    socket.on('mult_update', (val) => {
-      mult = parseFloat(val);
-      $('mult').textContent = `${mult.toFixed(2)}x`;
+    socket.on('multiplier_update', (data) => {
+      mult = parseFloat(data.multiplier);
+      $('mult').textContent = mult.toFixed(2) + 'x';
       updateLiveBots(mult);
 
-      // Check Auto-Cashouts
-      [1, 2].forEach(i => {
-        const b = bets[i];
-        const autoVal = parseFloat($(`b${i}Auto`).value);
-        if (b.active && !b.cashed && !isNaN(autoVal) && mult >= autoVal) {
-          cashoutPanel(i);
-        } else if (b.active && !b.cashed) {
-          $(`b${i}Btn`).textContent = `CASH OUT ${money(b.amount * mult)}`;
+      [1, 2].forEach(p => {
+        let autoVal = parseFloat($(`b${p}Auto`).value);
+        if (bets[p].active && !bets[p].cashed && autoVal && mult >= autoVal) {
+          handleBetAction(p);
         }
       });
-    });
 
-    socket.on('game_crash', (finalMult) => {
-      inRound = false;
-      const crashVal = parseFloat(finalMult);
-      playSound('crash');
-
-      $('mult').textContent = `${crashVal.toFixed(2)}x`;
-      $('mult').classList.add('crashed');$('stateBadge').textContent = 'CRASHED!';
-      addPill(crashVal);
-
-      // Settle losses for non-cashed active bets
-      [1, 2].forEach(i => {
-        const b = bets[i];
-        const btn = $(`b${i}Btn`);
-        if (b.active && !b.cashed) {
-          $(`p${i}Status`).textContent = 'CRASHED';
-          addHistoryRecord(i, b.amount, `${crashVal.toFixed(2)}x`, 0);
-        }
-        b.active = false;
-        b.cashed = false;
-
-        btn.disabled = false;
-        btn.textContent = 'PLACE BET';
-        btn.classList.remove('btn-cash');
-        btn.classList.add('btn-bet');
-      });
-
+      let progressPct = Math.min(1, (mult - 1) / 8);
+      drawGameScene(progressPct, false);
       renderUI();
     });
 
-    // Local Fallback Game Loop for standalone client testing without a live Socket backend
-    function startLocalEngineFallback() {
-      let currentMult = 1.00;
-      let targetCrash = (Math.random() * 5 + 1.1).toFixed(2);
+    socket.on('game_crash', (data) => {
+      inRound = false;
+      playSound('crash');
+      
+      const crashPoint = parseFloat(data.multiplier);
+      $('mult').textContent = 'FLEW AWAY @ ' + crashPoint.toFixed(2) + 'x';
+      $('mult').classList.add('crashed');
+      $('stateBadge').textContent = 'ROUND CRASHED';$('stateBadge').style.color = '#ff3d71';
 
-      setInterval(() => {
-        if (!inRound) {
-          socket.emit ? null : socket.listeners('game_start')[0]?.();
-          currentMult = 1.00;
-          targetCrash = (Math.random() * 4 + 1.15).toFixed(2);
-        } else {
-          currentMult += 0.02 * (currentMult * 0.8);
-          if (currentMult >= targetCrash) {
-            socket.emit ? null : socket.listeners('game_crash')[0]?.(targetCrash);
-          } else {
-            socket.emit ? null : socket.listeners('mult_update')[0]?.(currentMult);
-          }
+      [1, 2].forEach(p => {
+        if (bets[p].active && !bets[p].cashed) {
+          $(`p${p}Status`).textContent = 'Crashed';
+          $(`p${p}Status`).style.color = '#ff3d71';
+          addHistory(p, bets[p].amount, 'CRASHED', 0);
         }
-      }, 150);
+        bets[p].active = false;
+        bets[p].cashed = false;
+        bets[p].payout = 0;
+      });
+
+      let pill = document.createElement('div');
+      pill.className = `pill ${crashPoint >= 2.0 ? 'hot' : ''}`;
+      pill.textContent = crashPoint.toFixed(2) + 'x';
+      $('rounds').prepend(pill);
+
+      drawGameScene(1, true);
+      renderUI();
+    });
+
+    function handleBetAction(p) {
+      const b = bets[p];
+      if (inRound) {
+        if (b.active && !b.cashed) {
+          b.cashed = true;
+          b.payout = b.amount * mult;
+          balance += b.payout;
+          playSound('win');
+          $(`p${p}Status`).textContent = `Cashed @ ${mult.toFixed(2)}x`;
+          $(`p${p}Status`).style.color = '#22d39a';
+          addHistory(p, b.amount, `${mult.toFixed(2)}x`, b.payout);
+          renderUI();
+        }
+      } else {
+        if (!b.active) {
+          let amt = parseFloat($(`b${p}Amount`).value);
+          if (!amt || amt < 10 || amt > balance) return alert('Invalid virtual bet amount');
+          b.active = true; b.cashed = false; b.amount = amt;
+          balance -= amt; volume += amt;
+          playSound('bet');
+          $(`p${p}Status`).textContent = 'Queued';
+          $(`p${p}Status`).style.color = '#ffb62e';
+          renderUI();
+        }
+      }
     }
 
-    // Initialize application logic
-    window.addEventListener('DOMContentLoaded', () => {
+    function addHistory(panel, amount, result, payout) {
+      const tbody = $('hist');
+      if (!tbody) return;
+      const row = document.createElement('tr');
+      const isWin = payout > 0;
+      row.innerHTML = `
+        <td>#${roundNo}</td>
+        <td>Panel ${panel}</td>
+        <td>${money(amount)}</td>
+        <td class="${isWin ? 'badge-win' : 'badge-loss'}">${result}</td>
+        <td>${money(payout)}</td>
+      `;
+      tbody.prepend(row);
+    }
+
+    // ==========================================
+    // CANVAS RENDERING & ANIMATION SYSTEM
+    // ==========================================
+    function drawGameScene(progress, crashed) {
+      if (!canvas.width || !canvas.height) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background Starfield
+      ctx.fillStyle = '#101726';
+      stars.forEach(s => {
+        s.x -= s.speed;
+        if (s.x < 0) s.x = canvas.width;
+        ctx.fillRect(s.x, s.y, s.size, s.size);
+      });
+
+      const startX = 40;
+      const startY = canvas.height - 40;
+      const endX = startX + (canvas.width - 80) * Math.min(progress, 0.9);
+      const endY = startY - (canvas.height - 100) * Math.min(progress, 0.85);
+
+      // Curved Trajectory Line
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.quadraticCurveTo((startX + endX) / 2, startY, endX, endY);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = crashed ? '#ff3d71' : '#22d39a';
+      ctx.stroke();
+
+      // Render Avatar Flight Object
+      if (!crashed) {
+        ctx.font = '32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(avatarChoice, endX, endY);
+
+        // Exhaust Particles
+        particles.push({ x: endX - 10, y: endY + 10, size: Math.random() * 4 + 2, alpha: 1 });
+      }
+
+      // Render Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        ctx.fillStyle = `rgba(255, 182, 46, ${p.alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        p.x -= 1.5;
+        p.y += 0.5;
+        p.alpha -= 0.03;
+        if (p.alpha <= 0) particles.splice(i, 1);
+      }
+    }
+
+    // Initialize Page
+    window.addEventListener('load', () => {
+      resizeCanvas();
       initAuthCheck();
       renderUI();
-      renderCanvas();
-      
-      // Start offline fallback simulator if Socket.io doesn't connect within 1.5s
-      setTimeout(() => {
-        if (!socket.connected) {
-          console.log('Running in local simulation mode');
-          startLocalEngineFallback();
-        }
-      }, 1500);
     });
   </script>
 </body>
