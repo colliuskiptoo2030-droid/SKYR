@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SkyRush Platform</title>
+  <title>SkyRush Demo Platform</title>
+  <!-- Socket.io client library -->
+  <script src="/socket.io/socket.io.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #070a12; color: #eef2f8; }
@@ -31,7 +33,7 @@
     .page { display: none; }
     .page.active { display: block; }
     
-    /* Layout Grids */
+    /* Layout Grids: Game Engine Left, Chat/Bets Center, Stats Right */
     .game-layout { display: grid; grid-template-columns: 1fr 320px 280px; gap: 16px; }
     .card { background: #101725; border: 1px solid #222c40; border-radius: 15px; padding: 16px; position: relative; }
     
@@ -39,7 +41,7 @@
     .game-container { height: 420px; background: #090e18; border-radius: 12px; position: relative; overflow: hidden; border: 1px solid #1e283d; }
     canvas { width: 100%; height: 100%; display: block; }
     .game-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 16px; }
-    .mult-display { font-size: 64px; font-weight: 900; text-align: center; margin-top: auto; margin-bottom: auto; text-shadow: 0 0 25px rgba(0,0,0,0.8); z-index: 5; color: #22d39a; }
+    .mult-display { font-size: 64px; font-weight: 900; text-align: center; margin-top: auto; margin-bottom: auto; text-shadow: 0 0 25px rgba(0,0,0,0.8); z-index: 5; }
     .mult-display.crashed { color: #ff3d71; }
     .state-badge { background: rgba(17, 23, 37, 0.85); backdrop-filter: blur(4px); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #8e9bb0; border: 1px solid #252f43; width: fit-content; }
     
@@ -64,7 +66,7 @@
     .sidebar-tabs button.active { color: #fff; background: #1e283d; }
     
     .live-bets-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #7e8ba1; padding-bottom: 8px; border-bottom: 1px solid #1a2334; margin-bottom: 4px; }
-    .list-box { height: 350px; overflow-y: auto; font-size: 12px; }
+    .list-box { height: 430px; overflow-y: auto; font-size: 12px; }
     
     .live-bet-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 4px; border-bottom: 1px solid #141c2c; font-size: 11px; }
     .live-bet-row.cashed { background: rgba(34, 211, 154, 0.08); border-radius: 4px; }
@@ -72,23 +74,21 @@
     .live-bet-val { font-weight: 700; color: #fff; }
     .live-bet-mult { color: #22d39a; font-weight: 800; margin-left: 4px; }
 
-    .chat-box { display: flex; flex-direction: column; height: 380px; }
+    .chat-box { display: flex; flex-direction: column; height: 460px; }
     .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
-    .chat-msg { background: #141d2e; padding: 6px 10px; border-radius: 8px; font-size: 12px; line-height: 1.4; border: 1px solid #1f2a3f; }
-    .chat-msg strong { color: #ff3d71; margin-right: 4px; }
     .chat-input { display: flex; gap: 6px; margin-top: 8px; }
     .chat-input input { flex: 1; background: #182236; border: 1px solid #2a3752; border-radius: 8px; padding: 8px; color: #fff; font-size: 12px; }
     
     /* Pills & Tables */
     .pills { display: flex; flex-wrap: wrap; gap: 6px; max-height: 80px; overflow-y: auto; margin-bottom: 12px; }
-    .pill { background: #1a2334; padding: 5px 9px; border-radius: 6px; font-size: 11px; font-weight: bold; border: 1px solid #253147; color: #22d39a; }
+    .pill { background: #1a2334; padding: 5px 9px; border-radius: 6px; font-size: 11px; font-weight: bold; border: 1px solid #253147; }
     .pill.hot { color: #ff668d; border-color: #ff3d71; }
     .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1a2334; color: #aeb8c9; font-size: 13px; }
     
     .table { width: 100%; border-collapse: collapse; }
     .table th, .table td { text-align: left; padding: 10px; border-bottom: 1px solid #222c3d; font-size: 13px; }
-    .badge-win { color: #22d39a; font-weight: 700; }
-    .badge-loss { color: #ff3d71; font-weight: 700; }
+    .badge-win { color: #22d39a; font-weight: bold; }
+    .badge-loss { color: #ff3d71; font-weight: bold; }
     
     /* Modal System */
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center; }
@@ -104,10 +104,12 @@
     .stat { background: #171f2e; border: 1px solid #29354a; padding: 15px; border-radius: 11px; }
     .stat strong { display: block; font-size: 20px; margin-top: 6px; color: #fff; }
 
+    /* Footer Styling */
     footer { margin-top: 40px; background: #0c111c; border-top: 1px solid #1e283d; padding: 24px; text-align: center; color: #8e9bb0; font-size: 13px; }
     .footer-content { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; gap: 15px; }
     .support-box { display: flex; align-items: center; gap: 15px; }
     .support-btn { background: #25d366; color: #fff; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+    .support-btn:hover { opacity: 0.9; }
 
     @media(max-width: 1050px) {
       .game-layout { grid-template-columns: 1fr; }
@@ -125,18 +127,20 @@
       <button class="navbtn withdraw" onclick="openModal('withdrawModal')">💸 Withdraw</button>
       <button class="navbtn" id="soundBtn" onclick="toggleSound()">🔊 Sound On</button>
       
+      <!-- LOGGED OUT NAV ELEMENTS -->
       <div id="loggedOutNav" style="display: flex; gap: 8px; align-items: center;">
         <span style="font-weight: 700; color: #aeb8c9; margin-right: 4px;">Guest</span> 
         <button class="navbtn" id="loginNavBtn" onclick="openModal('loginModal')">Login</button>
         <button class="navbtn primary" id="regNavBtn" onclick="openModal('regModal')">Register</button>
       </div>
 
+      <!-- LOGGED IN NAV ELEMENTS -->
       <div id="loggedInNav" style="display: none; gap: 8px; align-items: center;">
         <div class="user-profile-badge">
           <span>👤</span>
           <span class="user-name" id="navUserName">User</span>
           <span style="color: #7e8ba1;">|</span>
-          <span id="navUserBalance">KSh 0.00</span>
+          <span id="navUserBalance">KSh 1,000.00</span>
         </div>
         <button class="navbtn danger" onclick="handleLogout()">Logout</button>
       </div>
@@ -166,11 +170,12 @@
       <div class="pills" id="rounds"></div>
 
       <div class="game-layout">
+        <!-- FIRST: PLANE ENGINE & DUAL BET CONTROLS -->
         <div>
           <div class="game-container">
             <canvas id="gameCanvas"></canvas>
             <div class="game-overlay">
-              <div class="state-badge" id="stateBadge">PREPARING NEXT ROUND...</div>
+              <div class="state-badge" id="stateBadge">Connecting to server...</div>
               <div class="mult-display" id="mult">1.00x</div>
               <div style="display: flex; justify-content: space-between; font-size: 12px; color: #7e8ba1;">
                 <span>Avatar: 
@@ -179,7 +184,7 @@
                     <option value="🚀">Rocket (🚀)</option>
                   </select>
                 </span>
-                <span id="seedHash">Server Sync: Standalone Engine Active</span>
+                <span id="seedHash">Server Sync: Active</span>
               </div>
             </div>
           </div>
@@ -208,7 +213,7 @@
           </div>
         </div>
 
-        <!-- SIDEBAR CHAT/BETS -->
+        <!-- SECOND: LIVE CHAT & LIVE BETS PANEL -->
         <div class="card">
           <div class="sidebar-tabs">
             <button class="active" id="btnSideChat" onclick="switchSidebar('chat')">Live Chat</button>
@@ -218,7 +223,7 @@
           <div id="sideChat" class="chat-box">
             <div class="chat-messages" id="chatMsgs"></div>
             <div class="chat-input">
-              <input id="chatInput" placeholder="Say something..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+              <input id="chatInput" placeholder="Say something...">
               <button class="navbtn primary" onclick="sendChatMessage()">Send</button>
             </div>
           </div>
@@ -232,10 +237,10 @@
           </div>
         </div>
 
-        <!-- SESSION SUMMARY -->
+        <!-- THIRD: SESSION SUMMARY & USER INFO -->
         <div class="card">
           <h3>Session Summary</h3>
-          <div class="row"><span>Balance</span><b id="bal">KSh 0.00</b></div>
+          <div class="row"><span>Demo Balance</span><b id="bal">KSh 1,000.00</b></div>
           <div class="row"><span>Total Active Bet</span><b id="totBet">KSh 0.00</b></div>
           <div class="row"><span>Current Profit</span><b id="totProfit">KSh 0.00</b></div>
           <hr style="border-color:#1e283d; margin: 15px 0;">
@@ -250,7 +255,7 @@
       <div class="card">
         <h2>Virtual Wallet</h2>
         <div class="statgrid">
-          <div class="stat">Balance<strong id="wbal">KSh 0.00</strong></div>
+          <div class="stat">Balance<strong id="wbal">KSh 1,000.00</strong></div>
           <div class="stat">Virtual Deposits<strong id="wdep">KSh 0.00</strong></div>
           <div class="stat">Virtual Cashouts<strong id="wout">KSh 0.00</strong></div>
         </div>
@@ -281,13 +286,14 @@
         <div class="statgrid">
           <div class="stat">Total Rounds Played<strong id="adminRounds">0</strong></div>
           <div class="stat">Virtual Volume<strong id="adminVol">KSh 0.00</strong></div>
-          <div class="stat">Engine Status<strong style="color: #22d39a;">STANDALONE ENGINE RUNNING</strong></div>
+          <div class="stat">Server Seed State<strong style="color: #22d39a;">SYNCHRONIZED SOCKET</strong></div>
         </div>
       </div>
     </section>
   </div>
 
   <!-- MODALS -->
+  <!-- DEPOSIT MODAL -->
   <div class="modal" id="depositModal">
     <div class="modal-card">
       <button class="close-modal" onclick="closeModal('depositModal')">✕</button>
@@ -301,6 +307,7 @@
     </div>
   </div>
 
+  <!-- WITHDRAWAL MODAL -->
   <div class="modal" id="withdrawModal">
     <div class="modal-card">
       <button class="close-modal" onclick="closeModal('withdrawModal')">✕</button>
@@ -314,6 +321,7 @@
     </div>
   </div>
 
+  <!-- LOGIN MODAL -->
   <div class="modal" id="loginModal">
     <div class="modal-card">
       <button class="close-modal" onclick="closeModal('loginModal')">✕</button>
@@ -327,6 +335,7 @@
     </div>
   </div>
 
+  <!-- REGISTER MODAL -->
   <div class="modal" id="regModal">
     <div class="modal-card">
       <button class="close-modal" onclick="closeModal('regModal')">✕</button>
@@ -342,6 +351,7 @@
     </div>
   </div>
 
+  <!-- CUSTOMER SUPPORT FOOTER -->
   <footer>
     <div class="footer-content">
       <div>
@@ -349,15 +359,18 @@
       </div>
       <div class="support-box">
         <span>Support: <b>+254181734795</b></span>
-        <a href="https://wa.me/254181734795" target="_blank" class="support-btn">💬 WhatsApp Support</a>
+        <a href="https://wa.me/254181734795" target="_blank" class="support-btn">
+          💬 WhatsApp Support
+        </a>
       </div>
     </div>
   </footer>
 
   <script>
-    let balance = 0, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
-    let gameState = 'WAITING'; // WAITING, FLYING, CRASHED
-    let mult = 1.00, crashPoint = 1.00;
+    const socket = io();
+
+    let balance = 1000, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
+    let inRound = false, mult = 1.00;
     let avatarChoice = '✈️';
     let soundEnabled = true;
     let liveBots = [];
@@ -367,8 +380,8 @@
     const botPrefixes = ['Ken', 'Alex', 'Brian', 'Dave', 'Sam', 'Grace', 'Mercy', 'John', 'Paul', 'Mike', 'Stacy', 'Chris', 'Victor', 'Otieno', 'Kip'];
 
     const bets = {
-      1: { active: false, cashed: false, amount: 0, payout: 0, queued: false },
-      2: { active: false, cashed: false, amount: 0, payout: 0, queued: false }
+      1: { active: false, cashed: false, amount: 0, payout: 0 },
+      2: { active: false, cashed: false, amount: 0, payout: 0 }
     };
 
     const canvas = document.getElementById('gameCanvas');
@@ -447,9 +460,7 @@
       if ($('adminRounds')) $('adminRounds').textContent = roundNo;
       if ($('adminVol')) $('adminVol').textContent = money(volume);
 
-      updatePanelButtons(1);
-      updatePanelButtons(2);
-
+      // Save user state in local storage if logged in
       if (currentUser) {
         currentUser.balance = balance;
         currentUser.totalDeposited = totalDeposited;
@@ -459,40 +470,9 @@
       }
     }
 
-    function updatePanelButtons(p) {
-      const btn = $(`b${p}Btn`);
-      if (gameState === 'FLYING') {
-        if (bets[p].active && !bets[p].cashed) {
-          btn.className = 'btn btn-cash';
-          btn.textContent = `CASHOUT (${money(bets[p].amount * mult)})`;
-          btn.disabled = false;
-        } else if (bets[p].cashed) {
-          btn.className = 'btn btn-bet';
-          btn.textContent = `CASHED OUT (${mult.toFixed(2)}x)`;
-          btn.disabled = true;
-        } else {
-          btn.className = 'btn btn-bet';
-          btn.textContent = 'WAITING FOR NEXT ROUND';
-          btn.disabled = true;
-        }
-      } else if (gameState === 'WAITING') {
-        if (bets[p].queued) {
-          btn.className = 'btn btn-cash';
-          btn.textContent = 'CANCEL BET';
-          btn.disabled = false;
-        } else {
-          btn.className = 'btn btn-bet';
-          btn.textContent = 'PLACE BET';
-          btn.disabled = false;
-        }
-      } else {
-        btn.disabled = true;
-      }
-    }
-
     function show(pageId) {
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-      let target = $(pageId); if (target) target.classList.add('active');
+      $(pageId).classList.add('active');
       document.querySelectorAll('.tabs button').forEach(el => el.classList.remove('active'));
       let t = $('t-' + pageId); if (t) t.classList.add('active');
     }
@@ -502,348 +482,30 @@
 
     function switchSidebar(tab) {
       if (tab === 'bets') {
-        $('sideBets').style.display = 'block';$('sideChat').style.display = 'none';
-        $('btnSideBets').classList.add('active');$('btnSideChat').classList.remove('active');
+        $('sideBets').style.display = 'block'; $('sideChat').style.display = 'none';
+        $('btnSideBets').classList.add('active'); $('btnSideChat').classList.remove('active');
       } else {
-        $('sideBets').style.display = 'none';$('sideChat').style.display = 'flex';
-        $('btnSideChat').classList.add('active');$('btnSideBets').classList.remove('active');
+        $('sideBets').style.display = 'none'; $('sideChat').style.display = 'flex';
+        $('btnSideChat').classList.add('active'); $('btnSideBets').classList.remove('active');
       }
     }
 
     // ==========================================
-    // STANDALONE GAME ENGINE SIMULATION
+    // USER AUTHENTICATION & PROFILE ENGINE
     // ==========================================
-    function startNextRoundCycle() {
-      gameState = 'WAITING';
-      mult = 1.00;
-      $('mult').classList.remove('crashed');
-      $('mult').textContent = '1.00x';$('stateBadge').textContent = 'PREPARING NEXT ROUND...';
-      
-      [1, 2].forEach(p => {
-        if (bets[p].queued) {
-          bets[p].active = true;
-          bets[p].cashed = false;
-          bets[p].queued = false;
-        } else {
-          bets[p].active = false;
-          bets[p].cashed = false;
-        }
-      });
-
-      generateLiveBots();
-      renderUI();
-
-      let timer = 5;
-      let interval = setInterval(() => {
-        timer--;
-        if (timer > 0) {
-          $('stateBadge').textContent = `NEXT ROUND IN ${timer}s`;
-        } else {
-          clearInterval(interval);
-          launchFlight();
-        }
-      }, 1000);
+    function getUsersDB() {
+      return JSON.parse(localStorage.getItem('skyrush_users_db') || '{}');
     }
 
-    function launchFlight() {
-      gameState = 'FLYING';
-      roundNo++;
-      $('stateBadge').textContent = 'FLEW AWAY!';
-      
-      const e = Math.random();
-      if (e < 0.05) {
-        crashPoint = 1.00;
-      } else {
-        crashPoint = parseFloat((1 / (1 - Math.random() * 0.96)).toFixed(2));
-      }
-
-      let startTime = Date.now();
-      
-      function tick() {
-        if (gameState !== 'FLYING') return;
-
-        let elapsed = (Date.now() - startTime) / 1000;
-        mult = parseFloat((Math.pow(Math.E, 0.06 * elapsed)).toFixed(2));
-
-        if (mult >= crashPoint) {
-          triggerCrash();
-        } else {
-          $('mult').textContent = mult.toFixed(2) + 'x';
-          
-          [1, 2].forEach(p => {
-            let autoVal = parseFloat($(`b${p}Auto`).value);
-            if (bets[p].active && !bets[p].cashed && autoVal && mult >= autoVal) {
-              cashoutBet(p);
-            }
-          });
-
-          updateLiveBots(mult);
-          renderUI();
-          requestAnimationFrame(tick);
-        }
-      }
-      requestAnimationFrame(tick);
-    }
-
-    function triggerCrash() {
-      gameState = 'CRASHED';
-      playSound('crash');
-      $('mult').classList.add('crashed');$('mult').textContent = `FLEW AWAY @ ${mult.toFixed(2)}x`;
-      $('stateBadge').textContent = 'ROUND ENDED';
-
-      const pill = document.createElement('div');
-      pill.className = `pill ${mult >= 2.0 ? 'hot' : ''}`;
-      pill.textContent = mult.toFixed(2) + 'x';
-      $('rounds').prepend(pill);
-
-      [1, 2].forEach(p => {
-        if (bets[p].active && !bets[p].cashed) {
-          logHistory(p, bets[p].amount, 'LOSS', 0);
-        }
-        bets[p].active = false;
-      });
-
-      for (let i = 0; i < 30; i++) {
-        particles.push({
-          x: canvas.width * 0.7,
-          y: canvas.height * 0.3,
-          vx: (Math.random() - 0.5) * 8,
-          vy: (Math.random() - 0.5) * 8,
-          life: 1
-        });
-      }
-
-      renderUI();
-      setTimeout(startNextRoundCycle, 3000);
-    }
-
-    function handleBetAction(p) {
-      const amount = parseFloat($(`b${p}Amount`).value);
-      
-      if (gameState === 'WAITING') {
-        if (bets[p].queued) {
-          balance += bets[p].amount;
-          bets[p].queued = false;
-          bets[p].amount = 0;
-        } else {
-          if (isNaN(amount) || amount < 10) return alert('Minimum bet is KSh 10');
-          if (balance < amount) return alert('Insufficient balance');
-          balance -= amount;
-          bets[p].queued = true;
-          bets[p].amount = amount;
-          volume += amount;
-          playSound('bet');
-        }
-      } else if (gameState === 'FLYING' && bets[p].active && !bets[p].cashed) {
-        cashoutBet(p);
-      }
-      renderUI();
-    }
-
-    function cashoutBet(p) {
-      bets[p].cashed = true;
-      bets[p].payout = bets[p].amount * mult;
-      balance += bets[p].payout;
-      playSound('win');
-      logHistory(p, bets[p].amount, 'WIN', bets[p].payout);
-      renderUI();
-    }
-
-    function logHistory(panel, betAmt, result, payout) {
-      const tbody = $('hist');
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>#${roundNo}</td>
-        <td>Panel ${panel}</td>
-        <td>${money(betAmt)}</td>
-        <td class="${result === 'WIN' ? 'badge-win' : 'badge-loss'}">${result} (${mult.toFixed(2)}x)</td>
-        <td>${money(payout)}</td>
-      `;
-      tbody.prepend(tr);
-    }
-
-    function animateCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.strokeStyle = '#162032';
-      ctx.lineWidth = 1;
-      for (let x = 0; x < canvas.width; x += 40) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-      }
-      for (let y = 0; y < canvas.height; y += 40) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-      }
-
-      if (gameState === 'FLYING' || gameState === 'CRASHED') {
-        let progress = Math.min((mult - 1) / 5, 1);
-        let endX = canvas.width * 0.1 + (canvas.width * 0.7) * progress;
-        let endY = canvas.height * 0.85 - (canvas.height * 0.6) * progress;
-
-        ctx.beginPath();
-        ctx.moveTo(canvas.width * 0.1, canvas.height * 0.85);
-        ctx.quadraticCurveTo(canvas.width * 0.3, canvas.height * 0.85, endX, endY);
-        ctx.strokeStyle = gameState === 'CRASHED' ? '#ff3d71' : '#22d39a';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        ctx.font = '36px sans-serif';
-        ctx.fillText(avatarChoice, endX - 18, endY + 12);
-      }
-
-      particles.forEach((p, index) => {
-        ctx.fillStyle = `rgba(255, 61, 113, ${p.life})`;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
-        p.x += p.vx; p.y += p.vy; p.life -= 0.03;
-        if (p.life <= 0) particles.splice(index, 1);
-      });
-
-      requestAnimationFrame(animateCanvas);
-    }
-
-    // ==========================================
-    // SIMULATED BOTS & CHAT
-    // ==========================================
-    function generateLiveBots() {
-      liveBots = [];
-      const botCount = Math.floor(Math.random() * 8) + 12;
-      let sum = 0;
-
-      for (let i = 0; i < botCount; i++) {
-        const name = botPrefixes[Math.floor(Math.random() * botPrefixes.length)] + Math.floor(Math.random() * 90 + 10);
-        const avatar = botAvatars[Math.floor(Math.random() * botAvatars.length)];
-        const betVal = Math.floor(Math.random() * 15 + 1) * 50;
-        const autoMult = (Math.random() * 4 + 1.2).toFixed(2);
-        sum += betVal;
-
-        liveBots.push({ name, avatar, betVal, autoMult, cashed: false, cashMult: 0 });
-      }
-
-      $('activePlayerCount').textContent = `${botCount} Bets`;
-      $('activePlayerSum').textContent = money(sum);
-      renderLiveBetsUI();
-    }
-
-    function updateLiveBots(currentMult) {
-      liveBots.forEach(bot => {
-        if (!bot.cashed && currentMult >= bot.autoMult) {
-          bot.cashed = true;
-          bot.cashMult = bot.autoMult;
-        }
-      });
-      renderLiveBetsUI();
-    }
-
-    function renderLiveBetsUI() {
-      const container = $('playerList');
-      container.innerHTML = '';
-      liveBots.forEach(bot => {
-        const row = document.createElement('div');
-        row.className = `live-bet-row ${bot.cashed ? 'cashed' : ''}`;
-        row.innerHTML = `
-          <div class="live-bet-user">
-            <span>${bot.avatar}</span>
-            <span>${bot.name}</span>
-          </div>
-          <div>
-            <span class="live-bet-val">${money(bot.betVal)}</span>
-            ${bot.cashed ? `<span class="live-bet-mult">${bot.cashMult}x</span>` : ''}
-          </div>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function sendChatMessage() {
-      const input = $('chatInput');
-      const text = input.value.trim();
-      if (!text) return;
-      const userName = currentUser ? currentUser.name : 'Guest';
-      
-      addChatMessage(userName, text);
-      input.value = '';
-    }
-
-    function addChatMessage(user, msg) {
-      const container = $('chatMsgs');
-      const div = document.createElement('div');
-      div.className = 'chat-msg';
-      div.innerHTML = `<strong>${user}:</strong> ${msg}`;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-    }
-
-    // ==========================================
-    // M-PESA & WALLET SIMULATION
-    // ==========================================
-    function sendPaymentRequest() {
-      const phone = $('stkPhone').value.trim();
-      const amount = parseFloat($('stkAmount').value);
-      const msg = $('stkMsg');
-
-      if (!phone || isNaN(amount) || amount < 100) {
-        msg.style.color = '#ff3d71';
-        msg.textContent = 'Enter valid phone and minimum KSh 100';
-        return;
-      }
-
-      msg.style.color = '#ffb62e';
-      msg.textContent = 'Sending STK Push to ' + phone + '...';
-
-      setTimeout(() => {
-        msg.style.color = '#22d39a';
-        msg.textContent = 'STK Push sent! Accept prompt on phone.';
-        setTimeout(() => {
-          balance += amount;
-          totalDeposited += amount;
-          msg.textContent = `Deposit of ${money(amount)} successful!`;
-          renderUI();
-          setTimeout(() => closeModal('depositModal'), 1500);
-        }, 2000);
-      }, 1000);
-    }
-
-    function handleWithdrawal() {
-      const phone = $('withdrawPhone').value.trim();
-      const amount = parseFloat($('withdrawAmount').value);
-      const msg = $('withdrawMsg');
-
-      if (!phone || isNaN(amount) || amount < 50) {
-        msg.style.color = '#ff3d71';
-        msg.textContent = 'Enter valid phone and minimum KSh 50';
-        return;
-      }
-
-      if (balance < amount) {
-        msg.style.color = '#ff3d71';
-        msg.textContent = 'Insufficient balance';
-        return;
-      }
-
-      balance -= amount;
-      totalWithdrawn += amount;
-      msg.style.color = '#22d39a';
-      msg.textContent = `Withdrawal of ${money(amount)} sent to ${phone}!`;
-      renderUI();
-      setTimeout(() => closeModal('withdrawModal'), 1500);
-    }
-
-    // ==========================================
-    // USER AUTH & STORAGE
-    // ==========================================
-    function getUsers() {
-      return JSON.parse(localStorage.getItem('skyrush_users') || '[]');
-    }
-
-    function saveUsers(users) {
-      localStorage.setItem('skyrush_users', JSON.stringify(users));
+    function saveUsersDB(db) {
+      localStorage.setItem('skyrush_users_db', JSON.stringify(db));
     }
 
     function updateUserInDatabase(user) {
-      const users = getUsers();
-      const idx = users.findIndex(u => u.email === user.email);
-      if (idx !== -1) {
-        users[idx] = user;
-        saveUsers(users);
+      let db = getUsersDB();
+      if (db[user.email]) {
+        db[user.email] = user;
+        saveUsersDB(db);
       }
     }
 
@@ -855,25 +517,35 @@
 
       if (!name || !email || !pass) {
         msg.style.color = '#ff3d71';
-        msg.textContent = 'Please fill all fields';
+        msg.textContent = 'Please fill in all fields.';
         return;
       }
 
-      const users = getUsers();
-      if (users.some(u => u.email === email)) {
+      let db = getUsersDB();
+      if (db[email]) {
         msg.style.color = '#ff3d71';
-        msg.textContent = 'User already exists';
+        msg.textContent = 'An account with this email already exists.';
         return;
       }
 
-      const newUser = { name, email, pass, balance: 1000, totalDeposited: 1000, totalWithdrawn: 0 };
-      users.push(newUser);
-      saveUsers(users);
+      const newUser = {
+        name,
+        email,
+        pass,
+        balance: 1000,
+        totalDeposited: 0,
+        totalWithdrawn: 0
+      };
+
+      db[email] = newUser;
+      saveUsersDB(db);
 
       msg.style.color = '#22d39a';
-      msg.textContent = 'Account created! Welcome bonus KSh 1,000 added.';
+      msg.textContent = 'Account created successfully! Logging you in...';
+
       setTimeout(() => {
         closeModal('regModal');
+        msg.textContent = '';
         loginUserSession(newUser);
       }, 1000);
     }
@@ -883,66 +555,520 @@
       const pass = $('loginPass').value;
       const msg = $('loginMsg');
 
-      const users = getUsers();
-      const found = users.find(u => u.email === email && u.pass === pass);
-
-      if (!found) {
+      if (!email || !pass) {
         msg.style.color = '#ff3d71';
-        msg.textContent = 'Invalid email or password';
+        msg.textContent = 'Please enter email and password.';
+        return;
+      }
+
+      let db = getUsersDB();
+      const user = db[email];
+
+      if (!user || user.pass !== pass) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Invalid email or password.';
         return;
       }
 
       msg.style.color = '#22d39a';
       msg.textContent = 'Login successful!';
+
       setTimeout(() => {
         closeModal('loginModal');
-        loginUserSession(found);
+        msg.textContent = '';
+        loginUserSession(user);
       }, 800);
     }
 
     function loginUserSession(user) {
       currentUser = user;
-      balance = user.balance;
-      totalDeposited = user.totalDeposited;
-      totalWithdrawn = user.totalWithdrawn;
+      localStorage.setItem('skyrush_current_user', JSON.stringify(user));
+      
+      balance = user.balance || 1000;
+      totalDeposited = user.totalDeposited || 0;
+      totalWithdrawn = user.totalWithdrawn || 0;
 
+      $('loggedOutNav').style.display = 'none';
+      $('loggedInNav').style.display = 'flex';
       $('navUserName').textContent = user.name;
-      $('loggedOutNav').style.display = 'none';$('loggedInNav').style.display = 'flex';
+      
       renderUI();
     }
 
     function handleLogout() {
       currentUser = null;
-      balance = 0;
+      localStorage.removeItem('skyrush_current_user');
+      
+      $('loggedOutNav').style.display = 'flex';
+      $('loggedInNav').style.display = 'none';
+      
+      // Reset to Guest values
+      balance = 1000;
       totalDeposited = 0;
       totalWithdrawn = 0;
-
-      localStorage.removeItem('skyrush_current_user');
-      $('loggedOutNav').style.display = 'flex';$('loggedInNav').style.display = 'none';
       renderUI();
     }
 
-    function checkSavedSession() {
+    function initAuthCheck() {
       const saved = localStorage.getItem('skyrush_current_user');
       if (saved) {
         try {
           const user = JSON.parse(saved);
           loginUserSession(user);
-        } catch(e) {}
+        } catch (e) {
+          localStorage.removeItem('skyrush_current_user');
+        }
       }
     }
 
-    // Initialize App
-    window.onload = () => {
-      resizeCanvas();
-      animateCanvas();
-      checkSavedSession();
-      startNextRoundCycle();
+    // ==========================================
+    // MULTIPLAYER LIVE BOTS SIMULATOR
+    // ==========================================
+    function generateLiveBots() {
+      const count = Math.floor(Math.random() * 25) + 25; // 25 to 50 bots
+      liveBots = [];
+      const amounts = [50, 100, 200, 300, 500, 1000, 1500, 2500, 5000];
+
+      for (let i = 0; i < count; i++) {
+        const prefix = botPrefixes[Math.floor(Math.random() * botPrefixes.length)];
+        const maskNum = Math.floor(Math.random() * 89 + 10);
+        const name = `${prefix}***${maskNum}`;
+        const avatar = botAvatars[Math.floor(Math.random() * botAvatars.length)];
+        const amount = amounts[Math.floor(Math.random() * amounts.length)];
+        const targetMult = parseFloat((Math.random() * (12.0 - 1.15) + 1.15).toFixed(2));
+
+        liveBots.push({
+          id: i,
+          name,
+          avatar,
+          amount,
+          targetMult,
+          cashed: false,
+          payout: 0,
+          cashMult: 0
+        });
+      }
+      liveBots.sort((a, b) => b.amount - a.amount);
+      renderLiveBetsList();
+    }
+
+    function updateLiveBots(currentMult) {
+      liveBots.forEach(bot => {
+        if (!bot.cashed && currentMult >= bot.targetMult) {
+          bot.cashed = true;
+          bot.cashMult = bot.targetMult;
+          bot.payout = bot.amount * bot.targetMult;
+        }
+      });
+      renderLiveBetsList();
+    }
+
+    function renderLiveBetsList() {
+      const container = $('playerList');
+      if (!container) return;
+
+      let totalStakes = 0;
+      let html = '';
+
+      liveBots.forEach(bot => {
+        totalStakes += bot.amount;
+        if (bot.cashed) {
+          html += `
+            <div class="live-bet-row cashed">
+              <div class="live-bet-user"><span>${bot.avatar}</span> <span>${bot.name}</span></div>
+              <div>
+                <span class="live-bet-val">${money(bot.payout)}</span>
+                <span class="live-bet-mult">@${bot.cashMult.toFixed(2)}x</span>
+              </div>
+            </div>`;
+        } else {
+          html += `
+            <div class="live-bet-row">
+              <div class="live-bet-user"><span>${bot.avatar}</span> <span>${bot.name}</span></div>
+              <div><span class="live-bet-val">${money(bot.amount)}</span></div>
+            </div>`;
+        }
+      });
+
+      container.innerHTML = html;
+      $('activePlayerCount').textContent = `${liveBots.length} Bets`;
+      $('activePlayerSum').textContent = money(totalStakes);
+    }
+
+    function sendChatMessage() {
+      const input = $('chatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const senderName = currentUser ? currentUser.name : 'Guest';
+      const msgsBox = $('chatMsgs');
       
-      // Default welcome chat messages
-      addChatMessage('System', 'Welcome to SkyRush Platform!');
-      addChatMessage('Alex99', 'Good luck everyone 🚀');
-    };
+      const el = document.createElement('div');
+      el.style.fontSize = '12px';
+      el.style.padding = '4px 0';
+      el.innerHTML = `<strong style="color: #22d39a;">${senderName}:</strong> <span style="color: #eef2f8;">${msg}</span>`;
+      
+      msgsBox.appendChild(el);
+      msgsBox.scrollTop = msgsBox.scrollHeight;
+      input.value = '';
+    }
+
+    // ==========================================
+    // M-PESA STK PUSH API & WITHDRAWAL LOGIC
+    // ==========================================
+    async function sendPaymentRequest() {
+      const phone = document.getElementById('stkPhone').value;
+      const amount = parseFloat(document.getElementById('stkAmount').value);
+      const msg = document.getElementById('stkMsg');
+
+      if (!phone || amount < 100) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Enter a valid phone number and minimum KSh 100.';
+        return;
+      }
+
+      msg.style.color = '#ffb62e';
+      msg.textContent = 'Initiating STK Push... Check your phone.';
+
+      try {
+        const response = await fetch('/api/stkpush', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, amount })
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          msg.style.color = '#22d39a';
+          msg.textContent = 'STK Sent! Funds will reflect upon PIN entry.';
+          balance += amount;
+          totalDeposited += amount;
+          renderUI();
+          setTimeout(() => closeModal('depositModal'), 2000);
+        } else {
+          throw new Error(data.message || 'STK Push failed');
+        }
+      } catch (err) {
+        // Fallback simulation if backend endpoint is absent
+        setTimeout(() => {
+          msg.style.color = '#22d39a';
+          msg.textContent = 'Demo Deposit Successful!';
+          balance += amount;
+          totalDeposited += amount;
+          renderUI();
+          setTimeout(() => closeModal('depositModal'), 1500);
+        }, 1200);
+      }
+    }
+
+    async function handleWithdrawal() {
+      const phone = document.getElementById('withdrawPhone').value;
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+      const msg = document.getElementById('withdrawMsg');
+
+      if (!phone || amount < 50) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Enter a valid phone number and minimum KSh 50.';
+        return;
+      }
+
+      if (amount > balance) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Insufficient balance for this withdrawal.';
+        return;
+      }
+
+      msg.style.color = '#ffb62e';
+      msg.textContent = 'Processing payout request...';
+
+      setTimeout(() => {
+        balance -= amount;
+        totalWithdrawn += amount;
+        renderUI();
+        msg.style.color = '#22d39a';
+        msg.textContent = 'Withdrawal request submitted successfully!';
+        setTimeout(() => closeModal('withdrawModal'), 1500);
+      }, 1000);
+    }
+
+    // ==========================================
+    // BETTING & GAMEPLAY LOGIC
+    // ==========================================
+    function handleBetAction(panelId) {
+      const b = bets[panelId];
+      const btn = $(`b${panelId}Btn`);
+
+      if (!b.active) {
+        // Place Bet
+        const amtInput = $(`b${panelId}Amount`);
+        const amt = parseFloat(amtInput.value);
+
+        if (isNaN(amt) || amt < 10) {
+          alert('Minimum bet amount is KSh 10');
+          return;
+        }
+
+        if (amt > balance) {
+          alert('Insufficient balance to place bet');
+          return;
+        }
+
+        balance -= amt;
+        volume += amt;
+        b.active = true;
+        b.cashed = false;
+        b.amount = amt;
+        b.payout = 0;
+
+        playSound('bet');
+        $(`p1Status`).textContent = panelId === 1 ? 'WAITING NEXT ROUND' : $('p1Status').textContent;
+        $(`p2Status`).textContent = panelId === 2 ? 'WAITING NEXT ROUND' : $('p2Status').textContent;
+
+        if (inRound) {
+          btn.textContent = 'BET PLACED (NEXT ROUND)';
+          btn.disabled = true;
+        } else {
+          btn.textContent = 'CANCEL BET';
+          btn.classList.remove('btn-bet');
+          btn.classList.add('btn-cash');
+        }
+        renderUI();
+      } else if (!inRound) {
+        // Cancel Bet before round starts
+        balance += b.amount;
+        volume -= b.amount;
+        b.active = false;
+        $(`p${panelId}Status`).textContent = '—';
+        btn.textContent = 'PLACE BET';
+        btn.classList.remove('btn-cash');
+        btn.classList.add('btn-bet');
+        renderUI();
+      } else if (!b.cashed) {
+        // Manual Cashout during round
+        cashoutPanel(panelId);
+      }
+    }
+
+    function cashoutPanel(panelId) {
+      const b = bets[panelId];
+      if (!b.active || b.cashed || !inRound) return;
+
+      b.cashed = true;
+      b.payout = b.amount * mult;
+      balance += b.payout;
+
+      playSound('win');
+      const btn = $(`b${panelId}Btn`);
+      btn.textContent = `CASHED OUT (${mult.toFixed(2)}x)`;
+      btn.disabled = true;
+      $(`p${panelId}Status`).textContent = `WON ${money(b.payout)}`;
+
+      addHistoryRecord(panelId, b.amount, `${mult.toFixed(2)}x`, b.payout);
+      renderUI();
+    }
+
+    function addHistoryRecord(panel, betVal, res, payoutVal) {
+      const tbody = $('hist');
+      if (!tbody) return;
+      const tr = document.createElement('tr');
+      const win = payoutVal > 0;
+      tr.innerHTML = `
+        <td>#${roundNo}</td>
+        <td>Panel ${panel}</td>
+        <td>${money(betVal)}</td>
+        <td class="${win ? 'badge-win' : 'badge-loss'}">${res}</td>
+        <td>${money(payoutVal)}</td>
+      `;
+      tbody.prepend(tr);
+    }
+
+    function addPill(multiplier) {
+      const container = $('rounds');
+      if (!container) return;
+      const pill = document.createElement('div');
+      const val = parseFloat(multiplier);
+      pill.className = `pill ${val >= 2.0 ? 'hot' : ''}`;
+      pill.textContent = `${val.toFixed(2)}x`;
+      container.prepend(pill);
+
+      if (container.children.length > 15) {
+        container.removeChild(container.lastChild);
+      }
+    }
+
+    // ==========================================
+    // CANVAS ANIMATION ENGINE
+    // ==========================================
+    let animX = 0, animY = canvas.height;
+
+    function renderCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw background space & moving stars
+      ctx.fillStyle = '#090e18';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      stars.forEach(s => {
+        ctx.fillRect(s.x, s.y, s.size, s.size);
+        if (inRound) {
+          s.x -= s.speed * (mult * 0.5);
+          if (s.x < 0) s.x = canvas.width;
+        }
+      });
+
+      if (inRound) {
+        const progress = Math.min((mult - 1) / 5, 1);
+        const targetX = canvas.width * 0.15 + (canvas.width * 0.7 * progress);
+        const targetY = canvas.height * 0.85 - (canvas.height * 0.65 * progress);
+
+        animX += (targetX - animX) * 0.1;
+        animY += (targetY - animY) * 0.1;
+
+        // Draw Flight Curve
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height);
+        ctx.quadraticCurveTo(animX * 0.5, canvas.height, animX, animY);
+        ctx.strokeStyle = '#ff3d71';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Gradient below line
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, 'rgba(255, 61, 113, 0.35)');
+        grad.addColorStop(1, 'rgba(255, 61, 113, 0.0)');
+        ctx.lineTo(animX, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Render Flying Avatar
+        ctx.font = '36px sans-serif';
+        ctx.fillText(avatarChoice, animX - 18, animY + 12);
+      } else {
+        animX = 0;
+        animY = canvas.height;
+      }
+
+      requestAnimationFrame(renderCanvas);
+    }
+
+    // ==========================================
+    // SOCKET REAL-TIME LISTENERS & CLIENT LOGIC
+    // ==========================================
+    socket.on('connect', () => {
+      $('stateBadge').textContent = 'Connected & Synced';$('stateBadge').style.borderColor = '#22d39a';
+    });
+
+    socket.on('disconnect', () => {
+      $('stateBadge').textContent = 'Reconnecting...';$('stateBadge').style.borderColor = '#ff3d71';
+    });
+
+    socket.on('game_start', () => {
+      roundNo++;
+      inRound = true;
+      mult = 1.00;
+
+      $('mult').classList.remove('crashed');$('stateBadge').textContent = 'FLEW OFF!';
+      generateLiveBots();
+
+      [1, 2].forEach(i => {
+        const b = bets[i];
+        const btn = $(`b${i}Btn`);
+        if (b.active) {
+          btn.textContent = `CASHOUT (${money(b.amount)})`;
+          btn.classList.remove('btn-bet');
+          btn.classList.add('btn-cash');
+          btn.disabled = false;
+          $(`p${i}Status`).textContent = 'IN FLIGHT';
+        } else {
+          btn.disabled = true;
+        }
+      });
+      renderUI();
+    });
+
+    socket.on('mult_update', (val) => {
+      mult = parseFloat(val);
+      $('mult').textContent = `${mult.toFixed(2)}x`;
+      updateLiveBots(mult);
+
+      // Check Auto-Cashouts
+      [1, 2].forEach(i => {
+        const b = bets[i];
+        const autoVal = parseFloat($(`b${i}Auto`).value);
+        if (b.active && !b.cashed && !isNaN(autoVal) && mult >= autoVal) {
+          cashoutPanel(i);
+        } else if (b.active && !b.cashed) {
+          $(`b${i}Btn`).textContent = `CASH OUT ${money(b.amount * mult)}`;
+        }
+      });
+    });
+
+    socket.on('game_crash', (finalMult) => {
+      inRound = false;
+      const crashVal = parseFloat(finalMult);
+      playSound('crash');
+
+      $('mult').textContent = `${crashVal.toFixed(2)}x`;
+      $('mult').classList.add('crashed');$('stateBadge').textContent = 'CRASHED!';
+      addPill(crashVal);
+
+      // Settle losses for non-cashed active bets
+      [1, 2].forEach(i => {
+        const b = bets[i];
+        const btn = $(`b${i}Btn`);
+        if (b.active && !b.cashed) {
+          $(`p${i}Status`).textContent = 'CRASHED';
+          addHistoryRecord(i, b.amount, `${crashVal.toFixed(2)}x`, 0);
+        }
+        b.active = false;
+        b.cashed = false;
+
+        btn.disabled = false;
+        btn.textContent = 'PLACE BET';
+        btn.classList.remove('btn-cash');
+        btn.classList.add('btn-bet');
+      });
+
+      renderUI();
+    });
+
+    // Local Fallback Game Loop for standalone client testing without a live Socket backend
+    function startLocalEngineFallback() {
+      let currentMult = 1.00;
+      let targetCrash = (Math.random() * 5 + 1.1).toFixed(2);
+
+      setInterval(() => {
+        if (!inRound) {
+          socket.emit ? null : socket.listeners('game_start')[0]?.();
+          currentMult = 1.00;
+          targetCrash = (Math.random() * 4 + 1.15).toFixed(2);
+        } else {
+          currentMult += 0.02 * (currentMult * 0.8);
+          if (currentMult >= targetCrash) {
+            socket.emit ? null : socket.listeners('game_crash')[0]?.(targetCrash);
+          } else {
+            socket.emit ? null : socket.listeners('mult_update')[0]?.(currentMult);
+          }
+        }
+      }, 150);
+    }
+
+    // Initialize application logic
+    window.addEventListener('DOMContentLoaded', () => {
+      initAuthCheck();
+      renderUI();
+      renderCanvas();
+      
+      // Start offline fallback simulator if Socket.io doesn't connect within 1.5s
+      setTimeout(() => {
+        if (!socket.connected) {
+          console.log('Running in local simulation mode');
+          startLocalEngineFallback();
+        }
+      }, 1500);
+    });
   </script>
 </body>
 </html>
