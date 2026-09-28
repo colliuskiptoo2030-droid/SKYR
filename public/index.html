@@ -74,6 +74,8 @@
 
     .chat-box { display: flex; flex-direction: column; height: 380px; }
     .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+    .chat-msg { background: #141d2e; padding: 6px 10px; border-radius: 8px; font-size: 12px; line-height: 1.4; border: 1px solid #1f2a3f; }
+    .chat-msg strong { color: #ff3d71; margin-right: 4px; }
     .chat-input { display: flex; gap: 6px; margin-top: 8px; }
     .chat-input input { flex: 1; background: #182236; border: 1px solid #2a3752; border-radius: 8px; padding: 8px; color: #fff; font-size: 12px; }
     
@@ -85,6 +87,8 @@
     
     .table { width: 100%; border-collapse: collapse; }
     .table th, .table td { text-align: left; padding: 10px; border-bottom: 1px solid #222c3d; font-size: 13px; }
+    .badge-win { color: #22d39a; font-weight: 700; }
+    .badge-loss { color: #ff3d71; font-weight: 700; }
     
     /* Modal System */
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center; }
@@ -214,7 +218,7 @@
           <div id="sideChat" class="chat-box">
             <div class="chat-messages" id="chatMsgs"></div>
             <div class="chat-input">
-              <input id="chatInput" placeholder="Say something...">
+              <input id="chatInput" placeholder="Say something..." onkeypress="if(event.key==='Enter') sendChatMessage()">
               <button class="navbtn primary" onclick="sendChatMessage()">Send</button>
             </div>
           </div>
@@ -457,7 +461,6 @@
 
     function updatePanelButtons(p) {
       const btn = $(`b${p}Btn`);
-      const status = $(`p1Status`);
       if (gameState === 'FLYING') {
         if (bets[p].active && !bets[p].cashed) {
           btn.className = 'btn btn-cash';
@@ -489,7 +492,7 @@
 
     function show(pageId) {
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-      $(pageId).classList.add('active');
+      let target = $(pageId); if (target) target.classList.add('active');
       document.querySelectorAll('.tabs button').forEach(el => el.classList.remove('active'));
       let t = $('t-' + pageId); if (t) t.classList.add('active');
     }
@@ -516,7 +519,6 @@
       $('mult').classList.remove('crashed');
       $('mult').textContent = '1.00x';$('stateBadge').textContent = 'PREPARING NEXT ROUND...';
       
-      // Reset bets
       [1, 2].forEach(p => {
         if (bets[p].queued) {
           bets[p].active = true;
@@ -548,10 +550,9 @@
       roundNo++;
       $('stateBadge').textContent = 'FLEW AWAY!';
       
-      // Calculate realistic crash point
       const e = Math.random();
       if (e < 0.05) {
-        crashPoint = 1.00; // Immediate crash 5% chance
+        crashPoint = 1.00;
       } else {
         crashPoint = parseFloat((1 / (1 - Math.random() * 0.96)).toFixed(2));
       }
@@ -569,7 +570,6 @@
         } else {
           $('mult').textContent = mult.toFixed(2) + 'x';
           
-          // Auto Cashout checks
           [1, 2].forEach(p => {
             let autoVal = parseFloat($(`b${p}Auto`).value);
             if (bets[p].active && !bets[p].cashed && autoVal && mult >= autoVal) {
@@ -591,13 +591,11 @@
       $('mult').classList.add('crashed');$('mult').textContent = `FLEW AWAY @ ${mult.toFixed(2)}x`;
       $('stateBadge').textContent = 'ROUND ENDED';
 
-      // Log pills
       const pill = document.createElement('div');
       pill.className = `pill ${mult >= 2.0 ? 'hot' : ''}`;
       pill.textContent = mult.toFixed(2) + 'x';
       $('rounds').prepend(pill);
 
-      // Reset bets lost
       [1, 2].forEach(p => {
         if (bets[p].active && !bets[p].cashed) {
           logHistory(p, bets[p].amount, 'LOSS', 0);
@@ -605,7 +603,6 @@
         bets[p].active = false;
       });
 
-      // Spawn crash particles
       for (let i = 0; i < 30; i++) {
         particles.push({
           x: canvas.width * 0.7,
@@ -625,7 +622,6 @@
       
       if (gameState === 'WAITING') {
         if (bets[p].queued) {
-          // Cancel bet
           balance += bets[p].amount;
           bets[p].queued = false;
           bets[p].amount = 0;
@@ -666,11 +662,9 @@
       tbody.prepend(tr);
     }
 
-    // Canvas Loop Animation
     function animateCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw background grid
       ctx.strokeStyle = '#162032';
       ctx.lineWidth = 1;
       for (let x = 0; x < canvas.width; x += 40) {
@@ -680,7 +674,6 @@
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
       }
 
-      // Draw curve if flying
       if (gameState === 'FLYING' || gameState === 'CRASHED') {
         let progress = Math.min((mult - 1) / 5, 1);
         let endX = canvas.width * 0.1 + (canvas.width * 0.7) * progress;
@@ -693,12 +686,10 @@
         ctx.lineWidth = 4;
         ctx.stroke();
 
-        // Draw Avatar
         ctx.font = '36px sans-serif';
         ctx.fillText(avatarChoice, endX - 18, endY + 12);
       }
 
-      // Render Particles
       particles.forEach((p, index) => {
         ctx.fillStyle = `rgba(255, 61, 113, ${p.life})`;
         ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
@@ -710,13 +701,150 @@
     }
 
     // ==========================================
+    // SIMULATED BOTS & CHAT
+    // ==========================================
+    function generateLiveBots() {
+      liveBots = [];
+      const botCount = Math.floor(Math.random() * 8) + 12;
+      let sum = 0;
+
+      for (let i = 0; i < botCount; i++) {
+        const name = botPrefixes[Math.floor(Math.random() * botPrefixes.length)] + Math.floor(Math.random() * 90 + 10);
+        const avatar = botAvatars[Math.floor(Math.random() * botAvatars.length)];
+        const betVal = Math.floor(Math.random() * 15 + 1) * 50;
+        const autoMult = (Math.random() * 4 + 1.2).toFixed(2);
+        sum += betVal;
+
+        liveBots.push({ name, avatar, betVal, autoMult, cashed: false, cashMult: 0 });
+      }
+
+      $('activePlayerCount').textContent = `${botCount} Bets`;
+      $('activePlayerSum').textContent = money(sum);
+      renderLiveBetsUI();
+    }
+
+    function updateLiveBots(currentMult) {
+      liveBots.forEach(bot => {
+        if (!bot.cashed && currentMult >= bot.autoMult) {
+          bot.cashed = true;
+          bot.cashMult = bot.autoMult;
+        }
+      });
+      renderLiveBetsUI();
+    }
+
+    function renderLiveBetsUI() {
+      const container = $('playerList');
+      container.innerHTML = '';
+      liveBots.forEach(bot => {
+        const row = document.createElement('div');
+        row.className = `live-bet-row ${bot.cashed ? 'cashed' : ''}`;
+        row.innerHTML = `
+          <div class="live-bet-user">
+            <span>${bot.avatar}</span>
+            <span>${bot.name}</span>
+          </div>
+          <div>
+            <span class="live-bet-val">${money(bot.betVal)}</span>
+            ${bot.cashed ? `<span class="live-bet-mult">${bot.cashMult}x</span>` : ''}
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function sendChatMessage() {
+      const input = $('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      const userName = currentUser ? currentUser.name : 'Guest';
+      
+      addChatMessage(userName, text);
+      input.value = '';
+    }
+
+    function addChatMessage(user, msg) {
+      const container = $('chatMsgs');
+      const div = document.createElement('div');
+      div.className = 'chat-msg';
+      div.innerHTML = `<strong>${user}:</strong> ${msg}`;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // ==========================================
+    // M-PESA & WALLET SIMULATION
+    // ==========================================
+    function sendPaymentRequest() {
+      const phone = $('stkPhone').value.trim();
+      const amount = parseFloat($('stkAmount').value);
+      const msg = $('stkMsg');
+
+      if (!phone || isNaN(amount) || amount < 100) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Enter valid phone and minimum KSh 100';
+        return;
+      }
+
+      msg.style.color = '#ffb62e';
+      msg.textContent = 'Sending STK Push to ' + phone + '...';
+
+      setTimeout(() => {
+        msg.style.color = '#22d39a';
+        msg.textContent = 'STK Push sent! Accept prompt on phone.';
+        setTimeout(() => {
+          balance += amount;
+          totalDeposited += amount;
+          msg.textContent = `Deposit of ${money(amount)} successful!`;
+          renderUI();
+          setTimeout(() => closeModal('depositModal'), 1500);
+        }, 2000);
+      }, 1000);
+    }
+
+    function handleWithdrawal() {
+      const phone = $('withdrawPhone').value.trim();
+      const amount = parseFloat($('withdrawAmount').value);
+      const msg = $('withdrawMsg');
+
+      if (!phone || isNaN(amount) || amount < 50) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Enter valid phone and minimum KSh 50';
+        return;
+      }
+
+      if (balance < amount) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Insufficient balance';
+        return;
+      }
+
+      balance -= amount;
+      totalWithdrawn += amount;
+      msg.style.color = '#22d39a';
+      msg.textContent = `Withdrawal of ${money(amount)} sent to ${phone}!`;
+      renderUI();
+      setTimeout(() => closeModal('withdrawModal'), 1500);
+    }
+
+    // ==========================================
     // USER AUTH & STORAGE
     // ==========================================
-    function getUsersDB() { return JSON.parse(localStorage.getItem('skyrush_users_db') || '{}'); }
-    function saveUsersDB(db) { localStorage.setItem('skyrush_users_db', JSON.stringify(db)); }
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('skyrush_users') || '[]');
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('skyrush_users', JSON.stringify(users));
+    }
+
     function updateUserInDatabase(user) {
-      let db = getUsersDB();
-      if (db[user.email]) { db[user.email] = user; saveUsersDB(db); }
+      const users = getUsers();
+      const idx = users.findIndex(u => u.email === user.email);
+      if (idx !== -1) {
+        users[idx] = user;
+        saveUsers(users);
+      }
     }
 
     function handleRegister() {
@@ -726,18 +854,28 @@
       const msg = $('regMsg');
 
       if (!name || !email || !pass) {
-        msg.style.color = '#ff3d71'; msg.textContent = 'Please fill in all fields.'; return;
-      }
-      let db = getUsersDB();
-      if (db[email]) {
-        msg.style.color = '#ff3d71'; msg.textContent = 'Email already registered.'; return;
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Please fill all fields';
+        return;
       }
 
-      const newUser = { name, email, pass, balance: 0, totalDeposited: 0, totalWithdrawn: 0 };
-      db[email] = newUser; saveUsersDB(db);
+      const users = getUsers();
+      if (users.some(u => u.email === email)) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'User already exists';
+        return;
+      }
 
-      msg.style.color = '#22d39a'; msg.textContent = 'Account created!';
-      setTimeout(() => { closeModal('regModal'); loginUserSession(newUser); }, 800);
+      const newUser = { name, email, pass, balance: 1000, totalDeposited: 1000, totalWithdrawn: 0 };
+      users.push(newUser);
+      saveUsers(users);
+
+      msg.style.color = '#22d39a';
+      msg.textContent = 'Account created! Welcome bonus KSh 1,000 added.';
+      setTimeout(() => {
+        closeModal('regModal');
+        loginUserSession(newUser);
+      }, 1000);
     }
 
     function handleLogin() {
@@ -745,155 +883,66 @@
       const pass = $('loginPass').value;
       const msg = $('loginMsg');
 
-      let db = getUsersDB();
-      const user = db[email];
+      const users = getUsers();
+      const found = users.find(u => u.email === email && u.pass === pass);
 
-      if (!user || user.pass !== pass) {
-        msg.style.color = '#ff3d71'; msg.textContent = 'Invalid credentials.'; return;
+      if (!found) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Invalid email or password';
+        return;
       }
 
-      msg.style.color = '#22d39a'; msg.textContent = 'Login successful!';
-      setTimeout(() => { closeModal('loginModal'); loginUserSession(user); }, 800);
+      msg.style.color = '#22d39a';
+      msg.textContent = 'Login successful!';
+      setTimeout(() => {
+        closeModal('loginModal');
+        loginUserSession(found);
+      }, 800);
     }
 
     function loginUserSession(user) {
       currentUser = user;
-      localStorage.setItem('skyrush_current_user', JSON.stringify(user));
-      balance = user.balance !== undefined ? user.balance : 0;
-      totalDeposited = user.totalDeposited || 0;
-      totalWithdrawn = user.totalWithdrawn || 0;
+      balance = user.balance;
+      totalDeposited = user.totalDeposited;
+      totalWithdrawn = user.totalWithdrawn;
 
-      $('loggedOutNav').style.display = 'none';
-      $('loggedInNav').style.display = 'flex';$('navUserName').textContent = user.name;
+      $('navUserName').textContent = user.name;
+      $('loggedOutNav').style.display = 'none';$('loggedInNav').style.display = 'flex';
       renderUI();
     }
 
     function handleLogout() {
       currentUser = null;
+      balance = 0;
+      totalDeposited = 0;
+      totalWithdrawn = 0;
+
       localStorage.removeItem('skyrush_current_user');
       $('loggedOutNav').style.display = 'flex';$('loggedInNav').style.display = 'none';
-      balance = 0; totalDeposited = 0; totalWithdrawn = 0;
       renderUI();
     }
 
-    function initAuthCheck() {
+    function checkSavedSession() {
       const saved = localStorage.getItem('skyrush_current_user');
       if (saved) {
-        try { loginUserSession(JSON.parse(saved)); } catch (e) {}
-      } else { renderUI(); }
-    }
-
-    // ==========================================
-    // MULTIPLAYER LIVE BOTS
-    // ==========================================
-    function generateLiveBots() {
-      const count = Math.floor(Math.random() * 20) + 15;
-      liveBots = [];
-      const amounts = [50, 100, 200, 500, 1000, 2500];
-
-      for (let i = 0; i < count; i++) {
-        const prefix = botPrefixes[Math.floor(Math.random() * botPrefixes.length)];
-        const maskNum = Math.floor(Math.random() * 89 + 10);
-        const name = `${prefix}***${maskNum}`;
-        const avatar = botAvatars[Math.floor(Math.random() * botAvatars.length)];
-        const amount = amounts[Math.floor(Math.random() * amounts.length)];
-        const targetMult = parseFloat((Math.random() * (8.0 - 1.15) + 1.15).toFixed(2));
-
-        liveBots.push({ id: i, name, avatar, amount, targetMult, cashed: false, payout: 0, cashMult: 0 });
+        try {
+          const user = JSON.parse(saved);
+          loginUserSession(user);
+        } catch(e) {}
       }
-      renderLiveBetsList();
     }
 
-    function updateLiveBots(currentMult) {
-      liveBots.forEach(bot => {
-        if (!bot.cashed && currentMult >= bot.targetMult) {
-          bot.cashed = true;
-          bot.cashMult = bot.targetMult;
-          bot.payout = bot.amount * bot.targetMult;
-        }
-      });
-      renderLiveBetsList();
-    }
-
-    function renderLiveBetsList() {
-      const container = $('playerList');
-      if (!container) return;
-      let totalStakes = 0;
-      let html = '';
-
-      liveBots.forEach(bot => {
-        totalStakes += bot.amount;
-        if (bot.cashed) {
-          html += `<div class="live-bet-row cashed"><div class="live-bet-user"><span>${bot.avatar}</span> <span>${bot.name}</span></div><div><span class="live-bet-val">${money(bot.payout)}</span><span class="live-bet-mult">@${bot.cashMult.toFixed(2)}x</span></div></div>`;
-        } else {
-          html += `<div class="live-bet-row"><div class="live-bet-user"><span>${bot.avatar}</span> <span>${bot.name}</span></div><div><span class="live-bet-val">${money(bot.amount)}</span></div></div>`;
-        }
-      });
-
-      container.innerHTML = html;
-      $('activePlayerCount').textContent = `${liveBots.length} Bets`;
-      $('activePlayerSum').textContent = money(totalStakes);
-    }
-
-    function sendChatMessage() {
-      const input = $('chatInput');
-      const msg = input.value.trim();
-      if (!msg) return;
-
-      const senderName = currentUser ? currentUser.name : 'Guest';
-      const msgsBox = $('chatMsgs');
-      const el = document.createElement('div');
-      el.style.fontSize = '12px'; el.style.padding = '4px 0';
-      el.innerHTML = `<strong style="color: #22d39a;">${senderName}:</strong> <span style="color: #eef2f8;">${msg}</span>`;
-      msgsBox.appendChild(el);
-      msgsBox.scrollTop = msgsBox.scrollHeight;
-      input.value = '';
-    }
-
-    // M-Pesa STK Push
-    function sendPaymentRequest() {
-      const phone = $('stkPhone').value;
-      const amount = parseFloat($('stkAmount').value);
-      const msg = $('stkMsg');
+    // Initialize App
+    window.onload = () => {
+      resizeCanvas();
+      animateCanvas();
+      checkSavedSession();
+      startNextRoundCycle();
       
-      if (!phone || isNaN(amount) || amount < 100) {
-        msg.style.color = '#ff3d71'; msg.textContent = 'Please enter valid details (min KSh 100).'; return;
-      }
-
-      msg.style.color = '#ffb62e'; msg.textContent = 'Sending M-Pesa STK Push prompt...';
-
-      setTimeout(() => {
-        balance += amount;
-        totalDeposited += amount;
-        renderUI();
-        msg.style.color = '#22d39a'; msg.textContent = `Deposit of ${money(amount)} successful!`;
-        setTimeout(() => { closeModal('depositModal'); msg.textContent = ''; }, 1200);
-      }, 1200);
-    }
-
-    function handleWithdrawal() {
-      const phone = $('withdrawPhone').value;
-      const amount = parseFloat($('withdrawAmount').value);
-      const msg = $('withdrawMsg');
-
-      if (!phone || isNaN(amount) || amount < 50) {
-        msg.style.color = '#ff3d71'; msg.textContent = 'Min withdrawal is KSh 50.'; return;
-      }
-      if (amount > balance) {
-        msg.style.color = '#ff3d71'; msg.textContent = 'Insufficient balance.'; return;
-      }
-
-      balance -= amount;
-      totalWithdrawn += amount;
-      renderUI();
-      msg.style.color = '#22d39a'; msg.textContent = `Withdrawal request for ${money(amount)} sent!`;
-      setTimeout(() => { closeModal('withdrawModal'); msg.textContent = ''; }, 1200);
-    }
-
-    // Start Engine
-    initAuthCheck();
-    animateCanvas();
-    startNextRoundCycle();
+      // Default welcome chat messages
+      addChatMessage('System', 'Welcome to SkyRush Platform!');
+      addChatMessage('Alex99', 'Good luck everyone 🚀');
+    };
   </script>
 </body>
 </html>
