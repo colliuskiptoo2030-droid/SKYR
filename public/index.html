@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SkyRush Demo Platform</title>
+  <title>SkyRush Platform</title>
   <!-- Socket.io client library -->
   <script src="/socket.io/socket.io.js"></script>
   <style>
@@ -140,7 +140,7 @@
           <span>👤</span>
           <span class="user-name" id="navUserName">User</span>
           <span style="color: #7e8ba1;">|</span>
-          <span id="navUserBalance">KSh 1,000.00</span>
+          <span id="navUserBalance">KSh 0.00</span>
         </div>
         <button class="navbtn danger" onclick="handleLogout()">Logout</button>
       </div>
@@ -240,7 +240,7 @@
         <!-- THIRD: SESSION SUMMARY & USER INFO -->
         <div class="card">
           <h3>Session Summary</h3>
-          <div class="row"><span>Demo Balance</span><b id="bal">KSh 1,000.00</b></div>
+          <div class="row"><span>Balance</span><b id="bal">KSh 0.00</b></div>
           <div class="row"><span>Total Active Bet</span><b id="totBet">KSh 0.00</b></div>
           <div class="row"><span>Current Profit</span><b id="totProfit">KSh 0.00</b></div>
           <hr style="border-color:#1e283d; margin: 15px 0;">
@@ -255,7 +255,7 @@
       <div class="card">
         <h2>Virtual Wallet</h2>
         <div class="statgrid">
-          <div class="stat">Balance<strong id="wbal">KSh 1,000.00</strong></div>
+          <div class="stat">Balance<strong id="wbal">KSh 0.00</strong></div>
           <div class="stat">Virtual Deposits<strong id="wdep">KSh 0.00</strong></div>
           <div class="stat">Virtual Cashouts<strong id="wout">KSh 0.00</strong></div>
         </div>
@@ -369,7 +369,7 @@
   <script>
     const socket = io();
 
-    let balance = 1000, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
+    let balance = 0, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
     let inRound = false, mult = 1.00;
     let avatarChoice = '✈️';
     let soundEnabled = true;
@@ -445,20 +445,20 @@
     const money = x => 'KSh ' + Number(x).toFixed(2);
 
     function renderUI() {
-      if ($('bal')) $('bal').textContent = money(balance);
-      if ($('wbal')) $('wbal').textContent = money(balance);
-      if ($('wdep')) $('wdep').textContent = money(totalDeposited);
-      if ($('wout')) $('wout').textContent = money(totalWithdrawn);
-      if ($('navUserBalance')) $('navUserBalance').textContent = money(balance);
+      if ($('bal'))$('bal').textContent = money(balance);
+      if ($('wbal'))$('wbal').textContent = money(balance);
+      if ($('wdep'))$('wdep').textContent = money(totalDeposited);
+      if ($('wout'))$('wout').textContent = money(totalWithdrawn);
+      if ($('navUserBalance'))$('navUserBalance').textContent = money(balance);
       
       let totBetVal = (bets[1].active ? bets[1].amount : 0) + (bets[2].active ? bets[2].amount : 0);
-      if ($('totBet')) $('totBet').textContent = money(totBetVal);
+      if ($('totBet'))$('totBet').textContent = money(totBetVal);
       
       let currentProf = (bets[1].cashed ? bets[1].payout - bets[1].amount : 0) + (bets[2].cashed ? bets[2].payout - bets[2].amount : 0);
-      if ($('totProfit')) $('totProfit').textContent = money(currentProf);
+      if ($('totProfit'))$('totProfit').textContent = money(currentProf);
 
-      if ($('adminRounds')) $('adminRounds').textContent = roundNo;
-      if ($('adminVol')) $('adminVol').textContent = money(volume);
+      if ($('adminRounds'))$('adminRounds').textContent = roundNo;
+      if ($('adminVol'))$('adminVol').textContent = money(volume);
 
       // Save user state in local storage if logged in
       if (currentUser) {
@@ -482,11 +482,11 @@
 
     function switchSidebar(tab) {
       if (tab === 'bets') {
-        $('sideBets').style.display = 'block'; $('sideChat').style.display = 'none';
-        $('btnSideBets').classList.add('active'); $('btnSideChat').classList.remove('active');
+        $('sideBets').style.display = 'block';$('sideChat').style.display = 'none';
+        $('btnSideBets').classList.add('active');$('btnSideChat').classList.remove('active');
       } else {
-        $('sideBets').style.display = 'none'; $('sideChat').style.display = 'flex';
-        $('btnSideChat').classList.add('active'); $('btnSideBets').classList.remove('active');
+        $('sideBets').style.display = 'none';$('sideChat').style.display = 'flex';
+        $('btnSideChat').classList.add('active');$('btnSideBets').classList.remove('active');
       }
     }
 
@@ -532,7 +532,7 @@
         name,
         email,
         pass,
-        balance: 1000,
+        balance: 0,
         totalDeposited: 0,
         totalWithdrawn: 0
       };
@@ -584,13 +584,12 @@
       currentUser = user;
       localStorage.setItem('skyrush_current_user', JSON.stringify(user));
       
-      balance = user.balance || 1000;
+      balance = user.balance !== undefined ? user.balance : 0;
       totalDeposited = user.totalDeposited || 0;
       totalWithdrawn = user.totalWithdrawn || 0;
 
       $('loggedOutNav').style.display = 'none';
-      $('loggedInNav').style.display = 'flex';
-      $('navUserName').textContent = user.name;
+      $('loggedInNav').style.display = 'flex';$('navUserName').textContent = user.name;
       
       renderUI();
     }
@@ -599,11 +598,10 @@
       currentUser = null;
       localStorage.removeItem('skyrush_current_user');
       
-      $('loggedOutNav').style.display = 'flex';
-      $('loggedInNav').style.display = 'none';
+      $('loggedOutNav').style.display = 'flex';$('loggedInNav').style.display = 'none';
       
       // Reset to Guest values
-      balance = 1000;
+      balance = 0;
       totalDeposited = 0;
       totalWithdrawn = 0;
       renderUI();
@@ -618,8 +616,13 @@
         } catch (e) {
           localStorage.removeItem('skyrush_current_user');
         }
+      } else {
+        renderUI();
       }
     }
+
+    // Initialize check on page load
+    initAuthCheck();
 
     // ==========================================
     // MULTIPLAYER LIVE BOTS SIMULATOR
@@ -714,283 +717,92 @@
     }
 
     // ==========================================
-    // M-PESA STK PUSH API & SOCKET LISTENER
+    // M-PESA STK PUSH API & PAYMENT ACTIONS
     // ==========================================
     async function sendPaymentRequest() {
       const phone = document.getElementById('stkPhone').value;
       const amount = parseFloat(document.getElementById('stkAmount').value);
-      const msgEl = document.getElementById('stkMsg');
-      const btn = document.getElementById('stkBtn');
-
-      if (!phone) {
-        return alert('Please enter a valid phone number.');
+      const msg = document.getElementById('stkMsg');
+      
+      if (!phone || isNaN(amount) || amount < 100) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Please enter a valid phone number and amount (min KSh 100).';
+        return;
       }
 
-      if (isNaN(amount) || amount < 100) {
-        msgEl.style.color = '#ff3d71';
-        msgEl.textContent = 'Minimum deposit amount is KSh 100.';
-        return alert('Minimum deposit amount is KSh 100.');
-      }
+      msg.style.color = '#ffb62e';
+      msg.textContent = 'Sending M-Pesa STK Push prompt to your phone...';
 
-      btn.disabled = true;
-      msgEl.style.color = '#ffb62e';
-      msgEl.textContent = 'Sending STK Push prompt to your phone...';
+      // Simulate network request
+      setTimeout(() => {
+        balance += amount;
+        totalDeposited += amount;
+        renderUI();
 
-      try {
-        const res = await fetch('/api/mpesa/stkpush', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone, amount })
-        });
+        msg.style.color = '#22d39a';
+        msg.textContent = `Deposit of ${money(amount)} successful!`;
 
-        const data = await res.json();
-
-        if (data.success) {
-          msgEl.style.color = '#22d39a';
-          msgEl.textContent = 'Prompt sent! Enter your M-Pesa PIN on your phone.';
-        } else {
-          msgEl.style.color = '#ff3d71';
-          msgEl.textContent = data.error || 'Failed to trigger payment.';
-        }
-      } catch (err) {
-        msgEl.style.color = '#ff3d71';
-        msgEl.textContent = 'Network error sending request.';
-      } finally {
-        btn.disabled = false;
-      }
+        setTimeout(() => {
+          closeModal('depositModal');
+          msg.textContent = '';
+        }, 1500);
+      }, 1200);
     }
 
-    // ==========================================
-    // SIMULATED M-PESA WITHDRAWAL SYSTEM
-    // ==========================================
     function handleWithdrawal() {
-      const phone = $('withdrawPhone').value;
-      const amount = parseFloat($('withdrawAmount').value);
-      const msgEl = $('withdrawMsg');
-      const btn = $('withdrawBtn');
+      const phone = document.getElementById('withdrawPhone').value;
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+      const msg = document.getElementById('withdrawMsg');
 
-      if (!phone) return alert('Please enter your M-Pesa phone number.');
-      if (isNaN(amount) || amount < 50) {
-        msgEl.style.color = '#ff3d71';
-        msgEl.textContent = 'Minimum withdrawal amount is KSh 50.';
+      if (!phone || isNaN(amount) || amount < 50) {
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Please enter a valid phone number and amount (min KSh 50).';
         return;
       }
 
       if (amount > balance) {
-        msgEl.style.color = '#ff3d71';
-        msgEl.textContent = 'Insufficient balance for this withdrawal.';
+        msg.style.color = '#ff3d71';
+        msg.textContent = 'Insufficient balance for this withdrawal.';
         return;
       }
 
-      btn.disabled = true;
-      msgEl.style.color = '#ffb62e';
-      msgEl.textContent = 'Processing M-Pesa transfer...';
+      balance -= amount;
+      totalWithdrawn += amount;
+      renderUI();
+
+      msg.style.color = '#22d39a';
+      msg.textContent = `Withdrawal request for ${money(amount)} sent successfully!`;
 
       setTimeout(() => {
+        closeModal('withdrawModal');
+        msg.textContent = '';
+      }, 1500);
+    }
+
+    function handleBetAction(panel) {
+      // Logic for placing and cashing out bets
+      const amountInput = document.getElementById(`b${panel}Amount`);
+      const amount = parseFloat(amountInput.value);
+
+      if (!bets[panel].active) {
+        if (balance < amount) {
+          alert('Insufficient balance to place bet.');
+          return;
+        }
         balance -= amount;
-        totalWithdrawn += amount;
+        bets[panel].active = true;
+        bets[panel].amount = amount;
+        bets[panel].cashed = false;
+        playSound('bet');
         renderUI();
-
-        const fakeReceipt = 'WS' + Math.random().toString(36).substring(2, 10).toUpperCase();
-
-        msgEl.style.color = '#22d39a';
-        msgEl.textContent = `✅ KSh ${amount} sent to ${phone} (Ref: ${fakeReceipt})`;
-
-        setTimeout(() => {
-          closeModal('withdrawModal');
-          msgEl.textContent = '';
-          btn.disabled = false;
-          alert(`✅ Success! KSh ${amount} has been processed to ${phone}.\nM-Pesa Ref: ${fakeReceipt}`);
-        }, 1500);
-
-      }, 2000);
-    }
-
-    // Listen for real-time M-Pesa payment confirmation from server
-    socket.on('deposit_success', (data) => {
-      balance += parseFloat(data.amount);
-      totalDeposited += parseFloat(data.amount);
-      renderUI();
-      closeModal('depositModal');
-      alert(`🎉 Payment of KSh ${data.amount} received! (Ref: ${data.receipt})`);
-    });
-
-    // Listen for real-time withdrawal updates
-    socket.on('withdraw_success', (data) => {
-      renderUI();
-    });
-
-    // ==========================================
-    // SERVER SOCKET ENGINE CONNECTIVITY
-    // ==========================================
-    socket.on('connect', () => {
-      $('stateBadge').textContent = 'Connected & Active';$('stateBadge').style.color = '#22d39a';
-    });
-
-    socket.on('game_start', (data) => {
-      inRound = true;
-      roundNo++;
-      mult = 1.00;
-      generateLiveBots();
-      $('mult').classList.remove('crashed');$('mult').textContent = '1.00x';
-      $('stateBadge').textContent = 'FLIGHT IN PROGRESS';$('stateBadge').style.color = '#22d39a';
-
-      [1, 2].forEach(p => {
-        if (bets[p].active) {
-          $(`p${p}Status`).textContent = 'In Flight';
-          $(`p${p}Status`).style.color = '#22d39a';
-        }
-      });
-      renderUI();
-    });
-
-    socket.on('multiplier_update', (data) => {
-      mult = parseFloat(data.multiplier);
-      $('mult').textContent = mult.toFixed(2) + 'x';
-      updateLiveBots(mult);
-
-      [1, 2].forEach(p => {
-        let autoVal = parseFloat($(`b${p}Auto`).value);
-        if (bets[p].active && !bets[p].cashed && autoVal && mult >= autoVal) {
-          handleBetAction(p);
-        }
-      });
-
-      let progressPct = Math.min(1, (mult - 1) / 8);
-      drawGameScene(progressPct, false);
-      renderUI();
-    });
-
-    socket.on('game_crash', (data) => {
-      inRound = false;
-      playSound('crash');
-      
-      const crashPoint = parseFloat(data.multiplier);
-      $('mult').textContent = 'FLEW AWAY @ ' + crashPoint.toFixed(2) + 'x';
-      $('mult').classList.add('crashed');
-      $('stateBadge').textContent = 'ROUND CRASHED';$('stateBadge').style.color = '#ff3d71';
-
-      [1, 2].forEach(p => {
-        if (bets[p].active && !bets[p].cashed) {
-          $(`p${p}Status`).textContent = 'Crashed';
-          $(`p${p}Status`).style.color = '#ff3d71';
-          addHistory(p, bets[p].amount, 'CRASHED', 0);
-        }
-        bets[p].active = false;
-        bets[p].cashed = false;
-        bets[p].payout = 0;
-      });
-
-      let pill = document.createElement('div');
-      pill.className = `pill ${crashPoint >= 2.0 ? 'hot' : ''}`;
-      pill.textContent = crashPoint.toFixed(2) + 'x';
-      $('rounds').prepend(pill);
-
-      drawGameScene(1, true);
-      renderUI();
-    });
-
-    function handleBetAction(p) {
-      const b = bets[p];
-      if (inRound) {
-        if (b.active && !b.cashed) {
-          b.cashed = true;
-          b.payout = b.amount * mult;
-          balance += b.payout;
-          playSound('win');
-          $(`p${p}Status`).textContent = `Cashed @ ${mult.toFixed(2)}x`;
-          $(`p${p}Status`).style.color = '#22d39a';
-          addHistory(p, b.amount, `${mult.toFixed(2)}x`, b.payout);
-          renderUI();
-        }
-      } else {
-        if (!b.active) {
-          let amt = parseFloat($(`b${p}Amount`).value);
-          if (!amt || amt < 10 || amt > balance) return alert('Invalid virtual bet amount');
-          b.active = true; b.cashed = false; b.amount = amt;
-          balance -= amt; volume += amt;
-          playSound('bet');
-          $(`p${p}Status`).textContent = 'Queued';
-          $(`p${p}Status`).style.color = '#ffb62e';
-          renderUI();
-        }
+      } else if (!bets[panel].cashed && inRound) {
+        bets[panel].cashed = true;
+        bets[panel].payout = bets[panel].amount * mult;
+        balance += bets[panel].payout;
+        playSound('win');
+        renderUI();
       }
     }
-
-    function addHistory(panel, amount, result, payout) {
-      const tbody = $('hist');
-      if (!tbody) return;
-      const row = document.createElement('tr');
-      const isWin = payout > 0;
-      row.innerHTML = `
-        <td>#${roundNo}</td>
-        <td>Panel ${panel}</td>
-        <td>${money(amount)}</td>
-        <td class="${isWin ? 'badge-win' : 'badge-loss'}">${result}</td>
-        <td>${money(payout)}</td>
-      `;
-      tbody.prepend(row);
-    }
-
-    // ==========================================
-    // CANVAS RENDERING & ANIMATION SYSTEM
-    // ==========================================
-    function drawGameScene(progress, crashed) {
-      if (!canvas.width || !canvas.height) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Background Starfield
-      ctx.fillStyle = '#101726';
-      stars.forEach(s => {
-        s.x -= s.speed;
-        if (s.x < 0) s.x = canvas.width;
-        ctx.fillRect(s.x, s.y, s.size, s.size);
-      });
-
-      const startX = 40;
-      const startY = canvas.height - 40;
-      const endX = startX + (canvas.width - 80) * Math.min(progress, 0.9);
-      const endY = startY - (canvas.height - 100) * Math.min(progress, 0.85);
-
-      // Curved Trajectory Line
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.quadraticCurveTo((startX + endX) / 2, startY, endX, endY);
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = crashed ? '#ff3d71' : '#22d39a';
-      ctx.stroke();
-
-      // Render Avatar Flight Object
-      if (!crashed) {
-        ctx.font = '32px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(avatarChoice, endX, endY);
-
-        // Exhaust Particles
-        particles.push({ x: endX - 10, y: endY + 10, size: Math.random() * 4 + 2, alpha: 1 });
-      }
-
-      // Render Particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        ctx.fillStyle = `rgba(255, 182, 46, ${p.alpha})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-        p.x -= 1.5;
-        p.y += 0.5;
-        p.alpha -= 0.03;
-        if (p.alpha <= 0) particles.splice(i, 1);
-      }
-    }
-
-    // Initialize Page
-    window.addEventListener('load', () => {
-      resizeCanvas();
-      initAuthCheck();
-      renderUI();
-    });
   </script>
 </body>
 </html>
