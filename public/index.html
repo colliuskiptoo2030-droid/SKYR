@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SkyRush Demo Platform</title>
+  <title>SKYRUSH platform</title>
   <!-- Socket.io client library -->
   <script src="/socket.io/socket.io.js"></script>
   <style>
@@ -131,7 +131,7 @@
       <div id="loggedOutNav" style="display: flex; gap: 8px; align-items: center;">
         <span style="font-weight: 700; color: #aeb8c9; margin-right: 4px;">Guest</span> 
         <button class="navbtn" id="loginNavBtn" onclick="openModal('loginModal')">Login</button>
-        <button class="navbtn primary" id="regNavBtn" onclick="openModal('regModal')">Register</button>
+        <button class="navbtn primary" id="regNavBtn" onclick="openModal('regModal')">Sign up</button>
       </div>
 
       <!-- LOGGED IN NAV ELEMENTS -->
@@ -213,22 +213,13 @@
           </div>
         </div>
 
-        <!-- SECOND: LIVE CHAT & LIVE BETS PANEL -->
+        <!-- SECOND: LIVE BETS PANEL -->
         <div class="card">
           <div class="sidebar-tabs">
-            <button class="active" id="btnSideChat" onclick="switchSidebar('chat')">Live Chat</button>
-            <button id="btnSideBets" onclick="switchSidebar('bets')">Live Bets</button>
-          </div>
-          
-          <div id="sideChat" class="chat-box">
-            <div class="chat-messages" id="chatMsgs"></div>
-            <div class="chat-input">
-              <input id="chatInput" placeholder="Say something...">
-              <button class="navbtn primary" onclick="sendChatMessage()">Send</button>
-            </div>
+            <button class="active" id="btnSideBets">Live Bets</button>
           </div>
 
-          <div id="sideBets" style="display: none;">
+          <div id="sideBets">
             <div class="live-bets-header">
               <span id="activePlayerCount">0 Bets</span>
               <span id="activePlayerSum">KSh 0</span>
@@ -240,7 +231,7 @@
         <!-- THIRD: SESSION SUMMARY & USER INFO -->
         <div class="card">
           <h3>Session Summary</h3>
-          <div class="row"><span>Demo Balance</span><b id="bal">KSh 1,000.00</b></div>
+          <div class="row"><span>Balance</span><b id="bal">KSh 0.00</b></div>
           <div class="row"><span>Total Active Bet</span><b id="totBet">KSh 0.00</b></div>
           <div class="row"><span>Current Profit</span><b id="totProfit">KSh 0.00</b></div>
           <hr style="border-color:#1e283d; margin: 15px 0;">
@@ -426,12 +417,12 @@
           gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
           osc.start(); osc.stop(audioCtx.currentTime + 0.3);
         } else if (type === 'crash') {
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.35);
-          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.5);
+          gain.gain.setValueAtTime(0.28, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.5);
         }
       } catch (e) {}
     }
@@ -445,7 +436,7 @@
     const money = x => 'KSh ' + Number(x).toFixed(2);
 
     function renderUI() {
-      if ($('bal')) $('bal').textContent = money(balance);
+      if ($('bal')) $('bal').textContent = 'KSh 0.00';
       if ($('wbal')) $('wbal').textContent = money(balance);
       if ($('wdep')) $('wdep').textContent = money(totalDeposited);
       if ($('wout')) $('wout').textContent = money(totalWithdrawn);
