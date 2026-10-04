@@ -202,10 +202,10 @@ function startNewGameRound() {
 
             setTimeout(startNewGameRound, 5000);
         } else {
-            multiplier += 0.03;
+            multiplier += 0.10;
             io.emit('multiplier_update', { multiplier: multiplier.toFixed(2) });
         }
-    }, 150);
+    }, 100);
 }
 
 startNewGameRound();
