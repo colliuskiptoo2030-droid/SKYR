@@ -183,7 +183,7 @@ function startNewGameRound() {
     isCrashed = false;
     roundId++;
     
-    const crashPoint = parseFloat((Math.random() * (15 - 1.05) + 1.05).toFixed(2));
+    const crashPoint = parseFloat((Math.random() * (300 - 1.05) + 1.05).toFixed(2));
     console.log(`🎮 New Round #${roundId} Started. Will crash at: ${crashPoint}x`);
 
     io.emit('game_start', { multiplier: 1.00, roundId });
