@@ -38,7 +38,224 @@
     .card { background: #101725; border: 1px solid #222c40; border-radius: 15px; padding: 16px; position: relative; }
     
     /* Canvas Game Area */
-    .game-container { height: 420px; background: #090e18; border-radius: 12px; position: relative; overflow: hidden; border: 1px solid #1e283d; }
+    .game-container {
+      height: 420px;
+      background: #090e18;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #1e283d;
+    }
+
+    /* ==============================
+       CRASH EFFECTS
+       ============================== */
+
+    .game-container.crash-shake {
+      animation: crashShake 0.65s ease-in-out;
+    }
+
+    .game-container.crash-flash::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 61, 113, 0.30);
+      pointer-events: none;
+      z-index: 20;
+      animation: crashFlash 0.75s ease-out forwards;
+    }
+
+    @keyframes crashShake {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0);
+      }
+      10% {
+        transform: translate(-8px, 4px) rotate(-0.7deg);
+      }
+      20% {
+        transform: translate(8px, -5px) rotate(0.7deg);
+      }
+      30% {
+        transform: translate(-7px, -4px) rotate(-0.6deg);
+      }
+      40% {
+        transform: translate(7px, 5px) rotate(0.6deg);
+      }
+      50% {
+        transform: translate(-5px, 3px) rotate(-0.4deg);
+      }
+      60% {
+        transform: translate(5px, -3px) rotate(0.4deg);
+      }
+      75% {
+        transform: translate(-3px, 2px);
+      }
+    }
+
+    @keyframes crashFlash {
+      0% {
+        opacity: 1;
+      }
+      35% {
+        opacity: 0.8;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    /* Explosion center */
+    .crash-burst {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #ffb62e;
+      box-shadow:
+        0 0 15px #ffb62e,
+        0 0 35px #ff3d71,
+        0 0 70px #ff3d71,
+        0 0 110px rgba(255, 61, 113, 0.7);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 25;
+      animation: crashBurst 0.85s ease-out forwards;
+    }
+
+    @keyframes crashBurst {
+      0% {
+        transform: translate(-50%, -50%) scale(0.2);
+        opacity: 1;
+      }
+      20% {
+        transform: translate(-50%, -50%) scale(1.4);
+        opacity: 1;
+      }
+      45% {
+        transform: translate(-50%, -50%) scale(3.2);
+        opacity: 0.95;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(8);
+        opacity: 0;
+      }
+    }
+
+    /* Explosion ring */
+    .crash-ring {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 4px solid #ffb62e;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 24;
+      animation: crashRing 0.9s ease-out forwards;
+    }
+
+    @keyframes crashRing {
+      0% {
+        width: 20px;
+        height: 20px;
+        opacity: 1;
+      }
+      100% {
+        width: 280px;
+        height: 280px;
+        opacity: 0;
+      }
+    }
+
+    /* Crash particles */
+    .crash-particle {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ffb62e;
+      pointer-events: none;
+      z-index: 23;
+      box-shadow: 0 0 10px #ffb62e;
+      animation: crashParticle 0.9s ease-out forwards;
+    }
+
+    @keyframes crashParticle {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform:
+          translate(
+            calc(-50% + var(--dx)),
+            calc(-50% + var(--dy))
+          )
+          scale(0.15);
+        opacity: 0;
+      }
+    }
+
+    /* Smoke */
+    .crash-smoke {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(142, 155, 176, 0.45);
+      pointer-events: none;
+      z-index: 22;
+      filter: blur(2px);
+      animation: crashSmoke 1.15s ease-out forwards;
+    }
+
+    @keyframes crashSmoke {
+      0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0.7;
+      }
+      100% {
+        transform:
+          translate(
+            calc(-50% + var(--sx)),
+            calc(-50% + var(--sy))
+          )
+          scale(3.5);
+        opacity: 0;
+      }
+    }
+
+    /* Crash text pop */
+    .crash-text-pop {
+      animation: crashTextPop 0.65s ease-out;
+    }
+
+    @keyframes crashTextPop {
+      0% {
+        transform: scale(0.65);
+        opacity: 0.3;
+      }
+      40% {
+        transform: scale(1.18);
+        opacity: 1;
+      }
+      70% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
     canvas { width: 100%; height: 100%; display: block; }
     .game-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 16px; }
     .mult-display { font-size: 64px; font-weight: 900; text-align: center; margin-top: auto; margin-bottom: auto; text-shadow: 0 0 25px rgba(0,0,0,0.8); z-index: 5; }
@@ -172,7 +389,7 @@
       <div class="game-layout">
         <!-- FIRST: PLANE ENGINE & DUAL BET CONTROLS -->
         <div>
-          <div class="game-container">
+          <div class="game-container" id="gameContainer">
             <canvas id="gameCanvas"></canvas>
             <div class="game-overlay">
               <div class="state-badge" id="stateBadge">Connecting to server...</div>
@@ -812,6 +1029,104 @@
     });
 
     // ==========================================
+    // CRASH EFFECT ENGINE
+    // ==========================================
+
+    function triggerCrashEffects() {
+      const gameContainer = $('gameContainer');
+      const multDisplay = $('mult');
+
+      if (!gameContainer) return;
+
+      // Screen shake
+      gameContainer.classList.remove('crash-shake');
+      void gameContainer.offsetWidth;
+      gameContainer.classList.add('crash-shake');
+
+      // Red flash
+      gameContainer.classList.remove('crash-flash');
+      void gameContainer.offsetWidth;
+      gameContainer.classList.add('crash-flash');
+
+      // Main explosion burst
+      const burst = document.createElement('div');
+      burst.className = 'crash-burst';
+      gameContainer.appendChild(burst);
+
+      // Explosion ring
+      const ring = document.createElement('div');
+      ring.className = 'crash-ring';
+      gameContainer.appendChild(ring);
+
+      // Create explosion particles
+      const particleCount = 28;
+
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'crash-particle';
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 80 + Math.random() * 190;
+
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+
+        particle.style.setProperty('--dx', `${dx}px`);
+        particle.style.setProperty('--dy', `${dy}px`);
+
+        const size = 3 + Math.random() * 6;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+
+        gameContainer.appendChild(particle);
+
+        setTimeout(() => {
+          particle.remove();
+        }, 1000);
+      }
+
+      // Create smoke particles
+      const smokeCount = 12;
+
+      for (let i = 0; i < smokeCount; i++) {
+        const smoke = document.createElement('div');
+        smoke.className = 'crash-smoke';
+
+        const sx = (Math.random() - 0.5) * 180;
+        const sy = -30 - Math.random() * 130;
+
+        smoke.style.setProperty('--sx', `${sx}px`);
+        smoke.style.setProperty('--sy', `${sy}px`);
+
+        const size = 12 + Math.random() * 18;
+        smoke.style.width = `${size}px`;
+        smoke.style.height = `${size}px`;
+
+        gameContainer.appendChild(smoke);
+
+        setTimeout(() => {
+          smoke.remove();
+        }, 1250);
+      }
+
+      // Make crash text pop
+      multDisplay.classList.remove('crash-text-pop');
+      void multDisplay.offsetWidth;
+      multDisplay.classList.add('crash-text-pop');
+
+      // Remove main temporary effects
+      setTimeout(() => {
+        burst.remove();
+        ring.remove();
+
+        gameContainer.classList.remove('crash-shake');
+        gameContainer.classList.remove('crash-flash');
+
+        multDisplay.classList.remove('crash-text-pop');
+      }, 1000);
+    }
+
+    // ==========================================
     // SERVER SOCKET ENGINE CONNECTIVITY
     // ==========================================
     socket.on('connect', () => {
@@ -823,8 +1138,11 @@
       roundNo++;
       mult = 1.00;
       generateLiveBots();
-      $('mult').classList.remove('crashed');$('mult').textContent = '1.00x';
-      $('stateBadge').textContent = 'FLIGHT IN PROGRESS';$('stateBadge').style.color = '#22d39a';
+      $('mult').classList.remove('crashed');
+      $('mult').classList.remove('crash-text-pop');
+      $('mult').textContent = '1.00x';
+      $('stateBadge').textContent = 'FLIGHT IN PROGRESS';
+      $('stateBadge').style.color = '#22d39a';
 
       [1, 2].forEach(p => {
         if (bets[p].active) {
@@ -855,11 +1173,17 @@
     socket.on('game_crash', (data) => {
       inRound = false;
       playSound('crash');
-      
+
       const crashPoint = parseFloat(data.multiplier);
+
       $('mult').textContent = 'FLEW AWAY @ ' + crashPoint.toFixed(2) + 'x';
       $('mult').classList.add('crashed');
-      $('stateBadge').textContent = 'ROUND CRASHED';$('stateBadge').style.color = '#ff3d71';
+
+      // Trigger visual crash effects
+      triggerCrashEffects();
+
+      $('stateBadge').textContent = 'ROUND CRASHED';
+      $('stateBadge').style.color = '#ff3d71';
 
       [1, 2].forEach(p => {
         if (bets[p].active && !bets[p].cashed) {
@@ -959,7 +1283,12 @@
         ctx.fillText(avatarChoice, endX, endY);
 
         // Exhaust Particles
-        particles.push({ x: endX - 10, y: endY + 10, size: Math.random() * 4 + 2, alpha: 1 });
+        particles.push({
+          x: endX - 10,
+          y: endY + 10,
+          size: Math.random() * 4 + 2,
+          alpha: 1
+        });
       }
 
       // Render Particles
@@ -969,9 +1298,11 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
+
         p.x -= 1.5;
         p.y += 0.5;
         p.alpha -= 0.03;
+
         if (p.alpha <= 0) particles.splice(i, 1);
       }
     }
