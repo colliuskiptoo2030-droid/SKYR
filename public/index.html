@@ -523,7 +523,7 @@
         name,
         email,
         pass,
-        balance: 1000,
+        balance: 0.00,
         totalDeposited: 0,
         totalWithdrawn: 0
       };
@@ -575,7 +575,7 @@
       currentUser = user;
       localStorage.setItem('skyrush_current_user', JSON.stringify(user));
       
-      balance = user.balance || 1000;
+      balance = user.balance || 0.00;
       totalDeposited = user.totalDeposited || 0;
       totalWithdrawn = user.totalWithdrawn || 0;
 
@@ -594,7 +594,7 @@
       $('loggedInNav').style.display = 'none';
       
       // Reset to Guest values
-      balance = 1000;
+      balance = O.OO;
       totalDeposited = 0;
       totalWithdrawn = 0;
       renderUI();
