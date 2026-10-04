@@ -183,7 +183,7 @@ function startNewGameRound() {
     isCrashed = false;
     roundId++;
     
-    const crashPoint = parseFloat((Math.random() * (70 - 1.05) + 1.05).toFixed(2));
+    const crashPoint = parseFloat((Math.random() * (20 - 1.05) + 1.05).toFixed(2));
     console.log(`🎮 New Round #${roundId} Started. Will crash at: ${crashPoint}x`);
 
     io.emit('game_start', { multiplier: 1.00, roundId });
@@ -202,10 +202,10 @@ function startNewGameRound() {
 
             setTimeout(startNewGameRound, 5000);
         } else {
-            multiplier += 0.10;
+            multiplier += 0.03;
             io.emit('multiplier_update', { multiplier: multiplier.toFixed(2) });
         }
-    }, 100);
+    }, 150);
 }
 
 startNewGameRound();
