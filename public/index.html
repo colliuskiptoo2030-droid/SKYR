@@ -534,9 +534,8 @@
               <div style="display: flex; justify-content: space-between; font-size: 12px; color: #7e8ba1;">
                 <span>Avatar: 
                   <select id="avatarSelect" style="background: transparent; color: #fff; border: 0;" onchange="avatarChoice = this.value">
-                    <option value="✈️">Airplane (✈️)</option>
-                    <option value="🚀">Rocket (🚀)</option>
-                  </select>
+  <option value="🚀" selected>Rocket (🚀)</option>
+</select>
                 </span>
                 <span id="seedHash">Server Sync: Active</span>
               </div>
@@ -716,7 +715,7 @@
 
     let balance = 1000, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
     let inRound = false, mult = 1.00;
-    let avatarChoice = '✈️';
+    let avatarChoice = '🚀';
     let soundEnabled = true;
     let liveBots = [];
     let currentUser = null;
