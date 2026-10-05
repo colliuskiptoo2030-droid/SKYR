@@ -713,7 +713,7 @@
   <script>
     const socket = io();
 
-    let balance = 1000, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
+    let balance = 0, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
     let inRound = false, mult = 1.00;
     let avatarChoice = '🚀';
     let soundEnabled = true;
@@ -723,10 +723,10 @@
     const botAvatars = ['👨‍💼', '👩‍‍💻', '🚀', '🦊', '🐯', '🦁', '⚡', '👑', '🎲', '💎', '🔥', '🎮'];
     const botPrefixes = ['Ken', 'Alex', 'Brian', 'Dave', 'Sam', 'Grace', 'Mercy', 'John', 'Paul', 'Mike', 'Stacy', 'Chris', 'Victor', 'Otieno', 'Kip'];
 
-    const bets = {
-      1: { active: false, cashed: false, amount: 0, payout: 0 },
-      2: { active: false, cashed: false, amount: 0, payout: 0 }
-    };
+   const bets = {
+  1: { active: false, queued: false, cashed: false, amount: 0, payout: 0 },
+  2: { active: false, queued: false, cashed: false, amount: 0, payout: 0 }
+};
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -1328,12 +1328,17 @@ function createSpaceStars() {
       $('mult').classList.remove('crash-text-pop');$('mult').textContent = '1.00x';
       $('stateBadge').textContent = 'FLIGHT IN PROGRESS';$('stateBadge').style.color = '#22d39a';
 
-      [1, 2].forEach(p => {
-        if (bets[p].active) {
-          $(`p${p}Status`).textContent = 'In Flight';
-          $(`p${p}Status`).style.color = '#22d39a';
-        }
-      });
+     [1, 2].forEach(p => {
+  if (bets[p].queued) {
+    bets[p].queued = false;
+    bets[p].active = true;
+    bets[p].cashed = false;
+    bets[p].payout = 0;
+
+    $(`p${p}Status`).textContent = 'In Flight';
+    $(`p${p}Status`).style.color = '#22d39a';
+  }
+});
       renderUI();
     });
 
@@ -1369,15 +1374,17 @@ function createSpaceStars() {
       $('stateBadge').textContent = 'ROUND CRASHED';$('stateBadge').style.color = '#ff3d71';
 
       [1, 2].forEach(p => {
-        if (bets[p].active && !bets[p].cashed) {
-          $(`p${p}Status`).textContent = 'Crashed';
-          $(`p${p}Status`).style.color = '#ff3d71';
-          addHistory(p, bets[p].amount, 'CRASHED', 0);
-        }
-        bets[p].active = false;
-        bets[p].cashed = false;
-        bets[p].payout = 0;
-      });
+  if (bets[p].active && !bets[p].cashed) {
+    $(`p${p}Status`).textContent = 'Crashed';
+    $(`p${p}Status`).style.color = '#ff3d71';
+    addHistory(p, bets[p].amount, 'CRASHED', 0);
+  }
+
+  bets[p].active = false;
+  bets[p].queued = false;
+  bets[p].cashed = false;
+  bets[p].payout = 0;
+});
 
       let pill = document.createElement('div');
       pill.className = `pill ${crashPoint >= 2.0 ? 'hot' : ''}`;
@@ -1388,32 +1395,66 @@ function createSpaceStars() {
       renderUI();
     });
 
-    function handleBetAction(p) {
-      const b = bets[p];
-      if (inRound) {
-        if (b.active && !b.cashed) {
-          b.cashed = true;
-          b.payout = b.amount * mult;
-          balance += b.payout;
-          playSound('win');
-          $(`p${p}Status`).textContent = `Cashed @ ${mult.toFixed(2)}x`;
-          $(`p${p}Status`).style.color = '#22d39a';
-          addHistory(p, b.amount, `${mult.toFixed(2)}x`, b.payout);
-          renderUI();
-        }
-      } else {
-        if (!b.active) {
-          let amt = parseFloat($(`b${p}Amount`).value);
-          if (!amt || amt < 10 || amt > balance) return alert('Invalid virtual bet amount');
-          b.active = true; b.cashed = false; b.amount = amt;
-          balance -= amt; volume += amt;
-          playSound('bet');
-          $(`p${p}Status`).textContent = 'Queued';
-          $(`p${p}Status`).style.color = '#ffb62e';
-          renderUI();
-        }
-      }
+   function handleBetAction(p) {
+  const b = bets[p];
+
+  // If the bet is already active during the flight, cash it out
+  if (b.active && !b.cashed && inRound) {
+    b.cashed = true;
+    b.payout = b.amount * mult;
+    balance += b.payout;
+
+    playSound('win');
+
+    $(`p${p}Status`).textContent = `Cashed @ ${mult.toFixed(2)}x`;
+    $(`p${p}Status`).style.color = '#22d39a';
+
+    addHistory(p, b.amount, `${mult.toFixed(2)}x`, b.payout);
+    renderUI();
+    return;
+  }
+
+  // Don't allow another bet while this one is already queued
+  if (b.queued) {
+    return alert('Bet already placed. Waiting for next round.');
+  }
+
+  // Place a new bet
+  if (!b.active) {
+    const amt = parseFloat($(`b${p}Amount`).value);
+
+    if (!amt || amt < 10 || amt > balance) {
+      return alert('Invalid virtual bet amount');
     }
+
+    b.amount = amt;
+    b.payout = 0;
+    b.cashed = false;
+
+    balance -= amt;
+    volume += amt;
+
+    playSound('bet');
+
+    // If round is already running, queue the bet for next round
+    if (inRound) {
+      b.queued = true;
+      b.active = false;
+
+      $(`p${p}Status`).textContent = 'WAIT FOR NEXT ROUND';
+      $(`p${p}Status`).style.color = '#ffb62e';
+    } else {
+      // Normal pre-round bet
+      b.queued = true;
+      b.active = false;
+
+      $(`p${p}Status`).textContent = 'Queued';
+      $(`p${p}Status`).style.color = '#ffb62e';
+    }
+
+    renderUI();
+  }
+}
 
     function addHistory(panel, amount, result, payout) {
       const tbody = $('hist');
