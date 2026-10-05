@@ -1131,9 +1131,18 @@ function createSpaceStars() {
         const data = await res.json();
 
         if (data.success) {
-          msgEl.style.color = '#22d39a';
-          msgEl.textContent = 'Prompt sent! Enter your M-Pesa PIN on your phone.';
-        } else {
+  balance += amount;
+  totalDeposited += amount;
+  renderUI();
+
+  msgEl.style.color = '#22d39a';
+  msgEl.textContent = `KSh ${amount.toFixed(2)} added to your virtual balance.`;
+
+  setTimeout(() => {
+    closeModal('depositModal');
+    msgEl.textContent = '';
+  }, 1200);
+} else {
           msgEl.style.color = '#ff3d71';
           msgEl.textContent = data.error || 'Failed to trigger payment.';
         }
