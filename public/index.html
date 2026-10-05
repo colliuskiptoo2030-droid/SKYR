@@ -733,7 +733,10 @@
     const ctx = canvas.getContext('2d');
     let particles = [], stars = [];
 
-// ==========================================// SPACE STARFIELD// ==========================================function createSpaceStars() {
+// ==========================================
+// SPACE STARFIELD
+// ==========================================
+function createSpaceStars() {
   const container = $('spaceStars');
   if (!container) return;
 
@@ -986,7 +989,7 @@
       $('loggedInNav').style.display = 'none';
       
       // Reset to Guest values
-      balance = O.OO;
+      balance = 0.00;
       totalDeposited = 0;
       totalWithdrawn = 0;
       renderUI();
