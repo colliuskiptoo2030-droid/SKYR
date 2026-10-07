@@ -257,128 +257,138 @@
       }
     }
 
-/* ==============================
-   SPACE BACKGROUND EFFECTS
-   ============================== */
+    /* ==============================
+       SPACE BACKGROUND EFFECTS
+       ============================== */
 
-.game-container {
-  background:
-    radial-gradient(circle at 18% 25%, rgba(78, 45, 140, 0.22), transparent 25%),
-    radial-gradient(circle at 82% 70%, rgba(25, 70, 150, 0.20), transparent 28%),
-    radial-gradient(circle at 50% 45%, rgba(255, 61, 113, 0.05), transparent 35%),
-    #030611;
-}/* Space atmosphere */
-.game-container::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(93, 54, 180, 0.10), transparent 22%),
-    radial-gradient(circle at 75% 25%, rgba(34, 111, 211, 0.08), transparent 25%),
-    radial-gradient(circle at 55% 85%, rgba(255, 61, 113, 0.06), transparent 28%);
-}/* Keep multiplier clearly above the space background */
-.mult-display {
-  position: relative;
-  z-index: 30;
-  text-shadow:
-    0 0 8px rgba(0,0,0,0.95),
-    0 0 20px rgba(0,0,0,0.95),
-    0 2px 8px rgba(0,0,0,0.95);
-}/* Planets */
-.space-planet {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0.82;
-}
+    .game-container {
+      background:
+        radial-gradient(circle at 18% 25%, rgba(78, 45, 140, 0.22), transparent 25%),
+        radial-gradient(circle at 82% 70%, rgba(25, 70, 150, 0.20), transparent 28%),
+        radial-gradient(circle at 50% 45%, rgba(255, 61, 113, 0.05), transparent 35%),
+        #030611;
+    }
 
-.planet-one {
-  width: 58px;
-  height: 58px;
-  right: 9%;
-  top: 14%;
-  background:
-    radial-gradient(circle at 30% 28%, #f5c77a 0 7%, transparent 8%),
-    radial-gradient(circle at 65% 65%, #a94e42 0 9%, transparent 10%),
-    radial-gradient(circle at 45% 45%, #d47b54 0 18%, #743b72 55%, #25183e 100%);
-  box-shadow:
-    inset -12px -10px 18px rgba(0,0,0,0.55),
-    0 0 25px rgba(143, 86, 255, 0.28);
-}
+    /* Space atmosphere */
+    .game-container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(93, 54, 180, 0.10), transparent 22%),
+        radial-gradient(circle at 75% 25%, rgba(34, 111, 211, 0.08), transparent 25%),
+        radial-gradient(circle at 55% 85%, rgba(255, 61, 113, 0.06), transparent 28%);
+    }
 
-.planet-two {
-  width: 34px;
-  height: 34px;
-  left: 8%;
-  top: 20%;
-  background:
-    radial-gradient(circle at 35% 30%, #8ee8ff, #3675c5 48%, #14265e 100%);
-  box-shadow:
-    inset -8px -7px 12px rgba(0,0,0,0.55),
-    0 0 20px rgba(61, 164, 255, 0.35);
-}
+    /* Keep multiplier clearly above the space background */
+    .mult-display {
+      position: relative;
+      z-index: 30;
+      text-shadow:
+        0 0 8px rgba(0,0,0,0.95),
+        0 0 20px rgba(0,0,0,0.95),
+        0 2px 8px rgba(0,0,0,0.95);
+    }
 
-.planet-three {
-  width: 42px;
-  height: 42px;
-  right: 22%;
-  bottom: 13%;
-  background:
-    radial-gradient(circle at 32% 28%, #ffd68a, #c47b45 48%, #5a2d29 100%);
-  box-shadow:
-    inset -9px -8px 14px rgba(0,0,0,0.55),
-    0 0 18px rgba(255, 167, 74, 0.25);
-}
+    /* Planets */
+    .space-planet {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.82;
+    }
 
-.planet-ring {
-  position: absolute;
-  width: 85px;
-  height: 25px;
-  border: 2px solid rgba(220, 205, 255, 0.42);
-  border-radius: 50%;
-  transform: rotate(-18deg);
-  left: -14px;
-  top: 17px;
-}/* Twinkling stars */
-.space-star {
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: #fff;
-  pointer-events: none;
-  z-index: 3;
-  box-shadow: 0 0 5px rgba(255,255,255,0.9);
-  animation: starTwinkle var(--twinkle) ease-in-out infinite;
-  animation-delay: var(--delay);
-}
+    .planet-one {
+      width: 58px;
+      height: 58px;
+      right: 9%;
+      top: 14%;
+      background:
+        radial-gradient(circle at 30% 28%, #f5c77a 0 7%, transparent 8%),
+        radial-gradient(circle at 65% 65%, #a94e42 0 9%, transparent 10%),
+        radial-gradient(circle at 45% 45%, #d47b54 0 18%, #743b72 55%, #25183e 100%);
+      box-shadow:
+        inset -12px -10px 18px rgba(0,0,0,0.55),
+        0 0 25px rgba(143, 86, 255, 0.28);
+    }
 
-.space-star.big {
-  width: 4px;
-  height: 4px;
-  box-shadow:
-    0 0 6px rgba(255,255,255,0.95),
-    0 0 13px rgba(142,203,255,0.65);
-}
+    .planet-two {
+      width: 34px;
+      height: 34px;
+      left: 8%;
+      top: 20%;
+      background:
+        radial-gradient(circle at 35% 30%, #8ee8ff, #3675c5 48%, #14265e 100%);
+      box-shadow:
+        inset -8px -7px 12px rgba(0,0,0,0.55),
+        0 0 20px rgba(61, 164, 255, 0.35);
+    }
 
-.space-star.distant {
-  width: 2px;
-  height: 2px;
-  opacity: 0.45;
-}@keyframes starTwinkle {
-  0%, 100% {
-    opacity: 0.25;
-    transform: scale(0.65);
-  }
+    .planet-three {
+      width: 42px;
+      height: 42px;
+      right: 22%;
+      bottom: 13%;
+      background:
+        radial-gradient(circle at 32% 28%, #ffd68a, #c47b45 48%, #5a2d29 100%);
+      box-shadow:
+        inset -9px -8px 14px rgba(0,0,0,0.55),
+        0 0 18px rgba(255, 167, 74, 0.25);
+    }
 
-  50% {
-    opacity: 1;
-    transform: scale(1.35);
-  }
-}
+    .planet-ring {
+      position: absolute;
+      width: 85px;
+      height: 25px;
+      border: 2px solid rgba(220, 205, 255, 0.42);
+      border-radius: 50%;
+      transform: rotate(-18deg);
+      left: -14px;
+      top: 17px;
+    }
+
+    /* Twinkling stars */
+    .space-star {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: #fff;
+      pointer-events: none;
+      z-index: 3;
+      box-shadow: 0 0 5px rgba(255,255,255,0.9);
+      animation: starTwinkle var(--twinkle) ease-in-out infinite;
+      animation-delay: var(--delay);
+    }
+
+    .space-star.big {
+      width: 4px;
+      height: 4px;
+      box-shadow:
+        0 0 6px rgba(255,255,255,0.95),
+        0 0 13px rgba(142,203,255,0.65);
+    }
+
+    .space-star.distant {
+      width: 2px;
+      height: 2px;
+      opacity: 0.45;
+    }
+
+    @keyframes starTwinkle {
+      0%, 100% {
+        opacity: 0.25;
+        transform: scale(0.65);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.35);
+      }
+    }
 
     canvas { width: 100%; height: 100%; display: block; }
     .game-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 16px; }
@@ -457,6 +467,146 @@
       .dual-controls { grid-template-columns: 1fr; }
       .footer-content { flex-direction: column; text-align: center; }
     }
+
+    /* ==============================
+       MOBILE PHONE RESPONSIVE FIX
+       ============================== */
+
+    @media (max-width: 600px) {
+
+      body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      nav {
+        height: auto;
+        min-height: 64px;
+        padding: 10px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .logo {
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+
+      .nav-actions {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+
+      .navbtn {
+        padding: 7px 9px;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      #loggedOutNav,
+      #loggedInNav {
+        display: flex !important;
+        align-items: center;
+        gap: 5px !important;
+        flex-wrap: nowrap;
+      }
+
+      #loggedOutNav span {
+        display: none;
+      }
+
+      #loginNavBtn,
+      #regNavBtn {
+        padding: 7px 10px;
+      }
+
+      .wrap {
+        width: 100%;
+        max-width: 100%;
+        margin: 12px auto;
+        padding: 0 10px;
+        overflow-x: hidden;
+      }
+
+      .tabs {
+        width: 100%;
+        gap: 5px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+      }
+
+      .tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tabs button {
+        flex-shrink: 0;
+        padding: 8px 11px;
+        font-size: 11px;
+      }
+
+      .game-layout {
+        grid-template-columns: 1fr;
+        width: 100%;
+      }
+
+      .card {
+        width: 100%;
+        padding: 12px;
+      }
+
+      .game-container {
+        width: 100%;
+        height: 300px;
+      }
+
+      .mult-display {
+        font-size: 42px;
+      }
+
+      .dual-controls {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .input-group {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .statgrid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal {
+        padding: 12px;
+      }
+
+      .modal-card {
+        width: 100%;
+        max-width: 380px;
+        padding: 20px;
+      }
+
+      footer {
+        padding: 18px 12px;
+      }
+
+      .footer-content {
+        width: 100%;
+      }
+
+      .support-box {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -513,30 +663,30 @@
       <div class="game-layout">
         <!-- FIRST: PLANE ENGINE & DUAL BET CONTROLS -->
         <div>
-<div class="game-container" id="gameContainer">
+          <div class="game-container" id="gameContainer">
 
-  <!-- SPACE PLANETS -->
-  <div class="space-planet planet-one">
-    <div class="planet-ring"></div>
-  </div>
+            <!-- SPACE PLANETS -->
+            <div class="space-planet planet-one">
+              <div class="planet-ring"></div>
+            </div>
 
-  <div class="space-planet planet-two"></div>
+            <div class="space-planet planet-two"></div>
 
-  <div class="space-planet planet-three"></div>
+            <div class="space-planet planet-three"></div>
 
-  <!-- TWINKLING STARS -->
-  <div id="spaceStars"></div>
+            <!-- TWINKLING STARS -->
+            <div id="spaceStars"></div>
 
-  <canvas id="gameCanvas"></canvas>
+            <canvas id="gameCanvas"></canvas>
 
-  <div class="game-overlay">
+            <div class="game-overlay">
               <div class="state-badge" id="stateBadge">Connecting to server...</div>
               <div class="mult-display" id="mult">1.00x</div>
               <div style="display: flex; justify-content: space-between; font-size: 12px; color: #7e8ba1;">
                 <span>Avatar: 
                   <select id="avatarSelect" style="background: transparent; color: #fff; border: 0;" onchange="avatarChoice = this.value">
-  <option value="🚀" selected>Rocket (🚀)</option>
-</select>
+                    <option value="🚀" selected>Rocket (🚀)</option>
+                  </select>
                 </span>
                 <span id="seedHash">Server Sync: Active</span>
               </div>
@@ -724,55 +874,55 @@
     const botAvatars = ['👨‍💼', '👩‍‍💻', '🚀', '🦊', '🐯', '🦁', '⚡', '👑', '🎲', '💎', '🔥', '🎮'];
     const botPrefixes = ['Ken', 'Alex', 'Brian', 'Dave', 'Sam', 'Grace', 'Mercy', 'John', 'Paul', 'Mike', 'Stacy', 'Chris', 'Victor', 'Otieno', 'Kip'];
 
-   const bets = {
-  1: { active: false, queued: false, cashed: false, amount: 0, payout: 0 },
-  2: { active: false, queued: false, cashed: false, amount: 0, payout: 0 }
-};
+    const bets = {
+      1: { active: false, queued: false, cashed: false, amount: 0, payout: 0 },
+      2: { active: false, queued: false, cashed: false, amount: 0, payout: 0 }
+    };
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let particles = [], stars = [];
 
-// ==========================================
-// SPACE STARFIELD
-// ==========================================
-function createSpaceStars() {
-  const container = $('spaceStars');
-  if (!container) return;
+    // ==========================================
+    // SPACE STARFIELD
+    // ==========================================
+    function createSpaceStars() {
+      const container = $('spaceStars');
+      if (!container) return;
 
-  container.innerHTML = '';
+      container.innerHTML = '';
 
-  const starCount = 65;
+      const starCount = 65;
 
-  for (let i = 0; i < starCount; i++) {
-    const star = document.createElement('div');
+      for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
 
-    star.className = 'space-star';
+        star.className = 'space-star';
 
-    if (Math.random() > 0.72) {
-      star.classList.add('big');
+        if (Math.random() > 0.72) {
+          star.classList.add('big');
+        }
+
+        if (Math.random() > 0.55) {
+          star.classList.add('distant');
+        }
+
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+
+        star.style.setProperty(
+          '--twinkle',
+          `${1.4 + Math.random() * 3.5}s`
+        );
+
+        star.style.setProperty(
+          '--delay',
+          `${Math.random() * 4}s`
+        );
+
+        container.appendChild(star);
+      }
     }
-
-    if (Math.random() > 0.55) {
-      star.classList.add('distant');
-    }
-
-    star.style.left = `${Math.random() * 100}%`;
-    star.style.top = `${Math.random() * 100}%`;
-
-    star.style.setProperty(
-      '--twinkle',
-      `${1.4 + Math.random() * 3.5}s`
-    );
-
-    star.style.setProperty(
-      '--delay',
-      `${Math.random() * 4}s`
-    );
-
-    container.appendChild(star);
-  }
-}
 
     function resizeCanvas() {
       if (!canvas.parentElement) return;
@@ -780,44 +930,56 @@ function createSpaceStars() {
       canvas.height = canvas.parentElement.clientHeight;
       initStars();
     }
+
     window.addEventListener('resize', resizeCanvas);
     setTimeout(resizeCanvas, 100);
 
     function initStars() {
       stars = [];
       for (let i = 0; i < 40; i++) {
-        stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 2, speed: Math.random() * 0.5 + 0.2 });
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2,
+          speed: Math.random() * 0.5 + 0.2
+        });
       }
     }
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
     function playSound(type) {
       if (!soundEnabled) return;
+
       try {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
 
         if (type === 'bet') {
           osc.frequency.setValueAtTime(300, audioCtx.currentTime);
           osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.12);
           gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
           gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.12);
         } else if (type === 'win') {
           osc.frequency.setValueAtTime(523, audioCtx.currentTime);
           osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
           osc.frequency.setValueAtTime(783, audioCtx.currentTime + 0.2);
           gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
           gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.3);
         } else if (type === 'crash') {
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(260, audioCtx.currentTime);
           osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.5);
           gain.gain.setValueAtTime(0.28, audioCtx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.5);
         }
       } catch (e) {}
     }
@@ -836,11 +998,17 @@ function createSpaceStars() {
       if ($('wdep')) $('wdep').textContent = money(totalDeposited);
       if ($('wout')) $('wout').textContent = money(totalWithdrawn);
       if ($('navUserBalance')) $('navUserBalance').textContent = money(balance);
-      
-      let totBetVal = (bets[1].active ? bets[1].amount : 0) + (bets[2].active ? bets[2].amount : 0);
+
+      let totBetVal =
+        (bets[1].active ? bets[1].amount : 0) +
+        (bets[2].active ? bets[2].amount : 0);
+
       if ($('totBet')) $('totBet').textContent = money(totBetVal);
-      
-      let currentProf = (bets[1].cashed ? bets[1].payout - bets[1].amount : 0) + (bets[2].cashed ? bets[2].payout - bets[2].amount : 0);
+
+      let currentProf =
+        (bets[1].cashed ? bets[1].payout - bets[1].amount : 0) +
+        (bets[2].cashed ? bets[2].payout - bets[2].amount : 0);
+
       if ($('totProfit')) $('totProfit').textContent = money(currentProf);
 
       if ($('adminRounds')) $('adminRounds').textContent = roundNo;
@@ -860,19 +1028,29 @@ function createSpaceStars() {
       document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
       $(pageId).classList.add('active');
       document.querySelectorAll('.tabs button').forEach(el => el.classList.remove('active'));
-      let t = $('t-' + pageId); if (t) t.classList.add('active');
+      let t = $('t-' + pageId);
+      if (t) t.classList.add('active');
     }
 
-    function openModal(id) { $(id)?.classList.add('active'); }
-    function closeModal(id) { $(id)?.classList.remove('active'); }
+    function openModal(id) {
+      $(id)?.classList.add('active');
+    }
+
+    function closeModal(id) {
+      $(id)?.classList.remove('active');
+    }
 
     function switchSidebar(tab) {
       if (tab === 'bets') {
-        $('sideBets').style.display = 'block'; $('sideChat').style.display = 'none';
-        $('btnSideBets').classList.add('active'); $('btnSideChat').classList.remove('active');
+        $('sideBets').style.display = 'block';
+        $('sideChat').style.display = 'none';
+        $('btnSideBets').classList.add('active');
+        $('btnSideChat').classList.remove('active');
       } else {
-        $('sideBets').style.display = 'none'; $('sideChat').style.display = 'flex';
-        $('btnSideChat').classList.add('active'); $('btnSideBets').classList.remove('active');
+        $('sideBets').style.display = 'none';
+        $('sideChat').style.display = 'flex';
+        $('btnSideChat').classList.add('active');
+        $('btnSideBets').classList.remove('active');
       }
     }
 
@@ -908,6 +1086,7 @@ function createSpaceStars() {
       }
 
       let db = getUsersDB();
+
       if (db[email]) {
         msg.style.color = '#ff3d71';
         msg.textContent = 'An account with this email already exists.';
@@ -969,7 +1148,7 @@ function createSpaceStars() {
     function loginUserSession(user) {
       currentUser = user;
       localStorage.setItem('skyrush_current_user', JSON.stringify(user));
-      
+
       balance = user.balance || 0.00;
       totalDeposited = user.totalDeposited || 0;
       totalWithdrawn = user.totalWithdrawn || 0;
@@ -977,26 +1156,28 @@ function createSpaceStars() {
       $('loggedOutNav').style.display = 'none';
       $('loggedInNav').style.display = 'flex';
       $('navUserName').textContent = user.name;
-      
+
       renderUI();
     }
 
     function handleLogout() {
       currentUser = null;
       localStorage.removeItem('skyrush_current_user');
-      
+
       $('loggedOutNav').style.display = 'flex';
       $('loggedInNav').style.display = 'none';
-      
+
       // Reset to Guest values
       balance = 0.00;
       totalDeposited = 0;
       totalWithdrawn = 0;
+
       renderUI();
     }
 
     function initAuthCheck() {
       const saved = localStorage.getItem('skyrush_current_user');
+
       if (saved) {
         try {
           const user = JSON.parse(saved);
@@ -1011,8 +1192,9 @@ function createSpaceStars() {
     // MULTIPLAYER LIVE BOTS SIMULATOR
     // ==========================================
     function generateLiveBots() {
-      const count = Math.floor(Math.random() * 25) + 25; // 25 to 50 bots
+      const count = Math.floor(Math.random() * 25) + 25;
       liveBots = [];
+
       const amounts = [50, 100, 200, 300, 500, 1000, 1500, 2500, 5000];
 
       for (let i = 0; i < count; i++) {
@@ -1021,7 +1203,9 @@ function createSpaceStars() {
         const name = `${prefix}***${maskNum}`;
         const avatar = botAvatars[Math.floor(Math.random() * botAvatars.length)];
         const amount = amounts[Math.floor(Math.random() * amounts.length)];
-        const targetMult = parseFloat((Math.random() * (12.0 - 1.15) + 1.15).toFixed(2));
+        const targetMult = parseFloat(
+          (Math.random() * (12.0 - 1.15) + 1.15).toFixed(2)
+        );
 
         liveBots.push({
           id: i,
@@ -1034,6 +1218,7 @@ function createSpaceStars() {
           cashMult: 0
         });
       }
+
       liveBots.sort((a, b) => b.amount - a.amount);
       renderLiveBetsList();
     }
@@ -1046,6 +1231,7 @@ function createSpaceStars() {
           bot.payout = bot.amount * bot.targetMult;
         }
       });
+
       renderLiveBetsList();
     }
 
@@ -1058,6 +1244,7 @@ function createSpaceStars() {
 
       liveBots.forEach(bot => {
         totalStakes += bot.amount;
+
         if (bot.cashed) {
           html += `
             <div class="live-bet-row cashed">
@@ -1088,12 +1275,12 @@ function createSpaceStars() {
 
       const senderName = currentUser ? currentUser.name : 'Guest';
       const msgsBox = $('chatMsgs');
-      
+
       const el = document.createElement('div');
       el.style.fontSize = '12px';
       el.style.padding = '4px 0';
       el.innerHTML = `<strong style="color: #22d39a;">${senderName}:</strong> <span style="color: #eef2f8;">${msg}</span>`;
-      
+
       msgsBox.appendChild(el);
       msgsBox.scrollTop = msgsBox.scrollHeight;
       input.value = '';
@@ -1129,15 +1316,15 @@ function createSpaceStars() {
           body: JSON.stringify({ phone, amount })
         });
 
-       const data = await res.json();
+        const data = await res.json();
 
-if (data.success) {
-  msgEl.style.color = '#22d39a';
-  msgEl.textContent = 'Prompt sent! Enter your M-Pesa PIN on your phone.';
-} else {
-  msgEl.style.color = '#ff3d71';
-  msgEl.textContent = data.error || 'Failed to trigger payment.';
-}
+        if (data.success) {
+          msgEl.style.color = '#22d39a';
+          msgEl.textContent = 'Prompt sent! Enter your M-Pesa PIN on your phone.';
+        } else {
+          msgEl.style.color = '#ff3d71';
+          msgEl.textContent = data.error || 'Failed to trigger payment.';
+        }
       } catch (err) {
         msgEl.style.color = '#ff3d71';
         msgEl.textContent = 'Network error sending request.';
@@ -1156,6 +1343,7 @@ if (data.success) {
       const btn = $('withdrawBtn');
 
       if (!phone) return alert('Please enter your M-Pesa phone number.');
+
       if (isNaN(amount) || amount < 50) {
         msgEl.style.color = '#ff3d71';
         msgEl.textContent = 'Minimum withdrawal amount is KSh 50.';
@@ -1207,27 +1395,22 @@ if (data.success) {
 
       if (!gameContainer) return;
 
-      // Screen shake
       gameContainer.classList.remove('crash-shake');
       void gameContainer.offsetWidth;
       gameContainer.classList.add('crash-shake');
 
-      // Red flash
       gameContainer.classList.remove('crash-flash');
       void gameContainer.offsetWidth;
       gameContainer.classList.add('crash-flash');
 
-      // Main explosion burst
       const burst = document.createElement('div');
       burst.className = 'crash-burst';
       gameContainer.appendChild(burst);
 
-      // Explosion ring
       const ring = document.createElement('div');
       ring.className = 'crash-ring';
       gameContainer.appendChild(ring);
 
-      // Create explosion particles
       const particleCount = 28;
 
       for (let i = 0; i < particleCount; i++) {
@@ -1254,7 +1437,6 @@ if (data.success) {
         }, 1000);
       }
 
-      // Create smoke particles
       const smokeCount = 12;
 
       for (let i = 0; i < smokeCount; i++) {
@@ -1278,12 +1460,10 @@ if (data.success) {
         }, 1250);
       }
 
-      // Make crash text pop
       multDisplay.classList.remove('crash-text-pop');
       void multDisplay.offsetWidth;
       multDisplay.classList.add('crash-text-pop');
 
-      // Remove main temporary effects
       setTimeout(() => {
         burst.remove();
         ring.remove();
@@ -1299,7 +1479,8 @@ if (data.success) {
     // SERVER SOCKET ENGINE CONNECTIVITY
     // ==========================================
     socket.on('connect', () => {
-      $('stateBadge').textContent = 'Connected & Active';$('stateBadge').style.color = '#22d39a';
+      $('stateBadge').textContent = 'Connected & Active';
+      $('stateBadge').style.color = '#22d39a';
     });
 
     socket.on('game_start', (data) => {
@@ -1307,21 +1488,26 @@ if (data.success) {
       roundNo++;
       mult = 1.00;
       generateLiveBots();
+
       $('mult').classList.remove('crashed');
-      $('mult').classList.remove('crash-text-pop');$('mult').textContent = '1.00x';
-      $('stateBadge').textContent = 'FLIGHT IN PROGRESS';$('stateBadge').style.color = '#22d39a';
+      $('mult').classList.remove('crash-text-pop');
+      $('mult').textContent = '1.00x';
 
-     [1, 2].forEach(p => {
-  if (bets[p].queued) {
-    bets[p].queued = false;
-    bets[p].active = true;
-    bets[p].cashed = false;
-    bets[p].payout = 0;
+      $('stateBadge').textContent = 'FLIGHT IN PROGRESS';
+      $('stateBadge').style.color = '#22d39a';
 
-    $(`p${p}Status`).textContent = 'In Flight';
-    $(`p${p}Status`).style.color = '#22d39a';
-  }
-});
+      [1, 2].forEach(p => {
+        if (bets[p].queued) {
+          bets[p].queued = false;
+          bets[p].active = true;
+          bets[p].cashed = false;
+          bets[p].payout = 0;
+
+          $(`p${p}Status`).textContent = 'In Flight';
+          $(`p${p}Status`).style.color = '#22d39a';
+        }
+      });
+
       renderUI();
     });
 
@@ -1332,6 +1518,7 @@ if (data.success) {
 
       [1, 2].forEach(p => {
         let autoVal = parseFloat($(`b${p}Auto`).value);
+
         if (bets[p].active && !bets[p].cashed && autoVal && mult >= autoVal) {
           handleBetAction(p);
         }
@@ -1351,23 +1538,23 @@ if (data.success) {
       $('mult').textContent = 'FLEW AWAY @ ' + crashPoint.toFixed(2) + 'x';
       $('mult').classList.add('crashed');
 
-      // Trigger visual crash effects
       triggerCrashEffects();
 
-      $('stateBadge').textContent = 'ROUND CRASHED';$('stateBadge').style.color = '#ff3d71';
+      $('stateBadge').textContent = 'ROUND CRASHED';
+      $('stateBadge').style.color = '#ff3d71';
 
       [1, 2].forEach(p => {
-  if (bets[p].active && !bets[p].cashed) {
-    $(`p${p}Status`).textContent = 'Crashed';
-    $(`p${p}Status`).style.color = '#ff3d71';
-    addHistory(p, bets[p].amount, 'CRASHED', 0);
-  }
+        if (bets[p].active && !bets[p].cashed) {
+          $(`p${p}Status`).textContent = 'Crashed';
+          $(`p${p}Status`).style.color = '#ff3d71';
+          addHistory(p, bets[p].amount, 'CRASHED', 0);
+        }
 
-  bets[p].active = false;
-  bets[p].queued = false;
-  bets[p].cashed = false;
-  bets[p].payout = 0;
-});
+        bets[p].active = false;
+        bets[p].queued = false;
+        bets[p].cashed = false;
+        bets[p].payout = 0;
+      });
 
       let pill = document.createElement('div');
       pill.className = `pill ${crashPoint >= 2.0 ? 'hot' : ''}`;
@@ -1378,72 +1565,74 @@ if (data.success) {
       renderUI();
     });
 
-   function handleBetAction(p) {
-  const b = bets[p];
+    function handleBetAction(p) {
+      const b = bets[p];
 
-  // If the bet is already active during the flight, cash it out
-  if (b.active && !b.cashed && inRound) {
-    b.cashed = true;
-    b.payout = b.amount * mult;
-    balance += b.payout;
+      // If the bet is already active during the flight, cash it out
+      if (b.active && !b.cashed && inRound) {
+        b.cashed = true;
+        b.payout = b.amount * mult;
+        balance += b.payout;
 
-    playSound('win');
+        playSound('win');
 
-    $(`p${p}Status`).textContent = `Cashed @ ${mult.toFixed(2)}x`;
-    $(`p${p}Status`).style.color = '#22d39a';
+        $(`p${p}Status`).textContent = `Cashed @ ${mult.toFixed(2)}x`;
+        $(`p${p}Status`).style.color = '#22d39a';
 
-    addHistory(p, b.amount, `${mult.toFixed(2)}x`, b.payout);
-    renderUI();
-    return;
-  }
+        addHistory(p, b.amount, `${mult.toFixed(2)}x`, b.payout);
+        renderUI();
+        return;
+      }
 
-  // Don't allow another bet while this one is already queued
-  if (b.queued) {
-    return alert('Bet already placed. Waiting for next round.');
-  }
+      // Don't allow another bet while this one is already queued
+      if (b.queued) {
+        return alert('Bet already placed. Waiting for next round.');
+      }
 
-  // Place a new bet
-  if (!b.active) {
-    const amt = parseFloat($(`b${p}Amount`).value);
+      // Place a new bet
+      if (!b.active) {
+        const amt = parseFloat($(`b${p}Amount`).value);
 
-    if (!amt || amt < 10 || amt > balance) {
-      return alert('Invalid virtual bet amount');
+        if (!amt || amt < 10 || amt > balance) {
+          return alert('Invalid virtual bet amount');
+        }
+
+        b.amount = amt;
+        b.payout = 0;
+        b.cashed = false;
+
+        balance -= amt;
+        volume += amt;
+
+        playSound('bet');
+
+        // If round is already running, queue the bet for next round
+        if (inRound) {
+          b.queued = true;
+          b.active = false;
+
+          $(`p${p}Status`).textContent = 'WAIT FOR NEXT ROUND';
+          $(`p${p}Status`).style.color = '#ffb62e';
+        } else {
+          // Normal pre-round bet
+          b.queued = true;
+          b.active = false;
+
+          $(`p${p}Status`).textContent = 'Queued';
+          $(`p${p}Status`).style.color = '#ffb62e';
+        }
+
+        renderUI();
+      }
     }
-
-    b.amount = amt;
-    b.payout = 0;
-    b.cashed = false;
-
-    balance -= amt;
-    volume += amt;
-
-    playSound('bet');
-
-    // If round is already running, queue the bet for next round
-    if (inRound) {
-      b.queued = true;
-      b.active = false;
-
-      $(`p${p}Status`).textContent = 'WAIT FOR NEXT ROUND';
-      $(`p${p}Status`).style.color = '#ffb62e';
-    } else {
-      // Normal pre-round bet
-      b.queued = true;
-      b.active = false;
-
-      $(`p${p}Status`).textContent = 'Queued';
-      $(`p${p}Status`).style.color = '#ffb62e';
-    }
-
-    renderUI();
-  }
-}
 
     function addHistory(panel, amount, result, payout) {
       const tbody = $('hist');
       if (!tbody) return;
+
       const row = document.createElement('tr');
       const isWin = payout > 0;
+
       row.innerHTML = `
         <td>#${roundNo}</td>
         <td>Panel ${panel}</td>
@@ -1451,6 +1640,7 @@ if (data.success) {
         <td class="${isWin ? 'badge-win' : 'badge-loss'}">${result}</td>
         <td>${money(payout)}</td>
       `;
+
       tbody.prepend(row);
     }
 
@@ -1459,13 +1649,17 @@ if (data.success) {
     // ==========================================
     function drawGameScene(progress, crashed) {
       if (!canvas.width || !canvas.height) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Background Starfield
       ctx.fillStyle = '#101726';
+
       stars.forEach(s => {
         s.x -= s.speed;
+
         if (s.x < 0) s.x = canvas.width;
+
         ctx.fillRect(s.x, s.y, s.size, s.size);
       });
 
@@ -1501,6 +1695,7 @@ if (data.success) {
       // Render Particles
       for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
+
         ctx.fillStyle = `rgba(255, 182, 46, ${p.alpha})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -1515,151 +1710,12 @@ if (data.success) {
     }
 
     // Initialize Page
-window.addEventListener('load', () => {
-  resizeCanvas();
-  createSpaceStars();
-  initAuthCheck();
-  renderUI();
-});
-    /* ==============================
-   MOBILE PHONE RESPONSIVE FIX
-   ============================== */
-
-@media (max-width: 600px) {
-
-  body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  nav {
-    height: auto;
-    min-height: 64px;
-    padding: 10px 12px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .logo {
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-
-  .nav-actions {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    flex-wrap: wrap;
-  }
-
-  .navbtn {
-    padding: 7px 9px;
-    font-size: 11px;
-    white-space: nowrap;
-  }
-
-  #loggedOutNav,
-  #loggedInNav {
-    display: flex !important;
-    align-items: center;
-    gap: 5px !important;
-    flex-wrap: nowrap;
-  }
-
-  #loggedOutNav span {
-    display: none;
-  }
-
-  #loginNavBtn,
-  #regNavBtn {
-    padding: 7px 10px;
-  }
-
-  .wrap {
-    width: 100%;
-    max-width: 100%;
-    margin: 12px auto;
-    padding: 0 10px;
-    overflow-x: hidden;
-  }
-
-  .tabs {
-    width: 100%;
-    gap: 5px;
-    margin-bottom: 12px;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    scrollbar-width: none;
-  }
-
-  .tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .tabs button {
-    flex-shrink: 0;
-    padding: 8px 11px;
-    font-size: 11px;
-  }
-
-  .game-layout {
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-
-  .card {
-    width: 100%;
-    padding: 12px;
-  }
-
-  .game-container {
-    width: 100%;
-    height: 300px;
-  }
-
-  .mult-display {
-    font-size: 42px;
-  }
-
-  .dual-controls {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .input-group {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .statgrid {
-    grid-template-columns: 1fr;
-  }
-
-  .modal {
-    padding: 12px;
-  }
-
-  .modal-card {
-    width: 100%;
-    max-width: 380px;
-    padding: 20px;
-  }
-
-  footer {
-    padding: 18px 12px;
-  }
-
-  .footer-content {
-    width: 100%;
-  }
-
-  .support-box {
-    flex-direction: column;
-    gap: 8px;
-  }
-}
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      createSpaceStars();
+      initAuthCheck();
+      renderUI();
+    });
   </script>
 </body>
 </html>
