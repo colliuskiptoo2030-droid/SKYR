@@ -1130,19 +1130,7 @@ function createSpaceStars() {
 
         const data = await res.json();
 
-        if (data.success) {
-  balance += amount;
-  totalDeposited += amount;
-  renderUI();
-
-  msgEl.style.color = '#22d39a';
-  msgEl.textContent = `KSh ${amount.toFixed(2)} added to your virtual balance.`;
-
-  setTimeout(() => {
-    closeModal('depositModal');
-    msgEl.textContent = '';
-  }, 1200);
-} else {
+  else {
           msgEl.style.color = '#ff3d71';
           msgEl.textContent = data.error || 'Failed to trigger payment.';
         }
@@ -1199,15 +1187,6 @@ function createSpaceStars() {
 
       }, 2000);
     }
-
-    // Listen for real-time M-Pesa payment confirmation from server
-    socket.on('deposit_success', (data) => {
-      balance += parseFloat(data.amount);
-      totalDeposited += parseFloat(data.amount);
-      renderUI();
-      closeModal('depositModal');
-      alert(`🎉 Payment of KSh ${data.amount} received! (Ref: ${data.receipt})`);
-    });
 
     // Listen for real-time withdrawal updates
     socket.on('withdraw_success', (data) => {
