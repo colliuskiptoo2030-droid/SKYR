@@ -1128,12 +1128,15 @@ function createSpaceStars() {
           body: JSON.stringify({ phone, amount })
         });
 
-        const data = await res.json();
+       const data = await res.json();
 
-  else {
-          msgEl.style.color = '#ff3d71';
-          msgEl.textContent = data.error || 'Failed to trigger payment.';
-        }
+if (data.success) {
+  msgEl.style.color = '#22d39a';
+  msgEl.textContent = 'Prompt sent! Enter your M-Pesa PIN on your phone.';
+} else {
+  msgEl.style.color = '#ff3d71';
+  msgEl.textContent = data.error || 'Failed to trigger payment.';
+}
       } catch (err) {
         msgEl.style.color = '#ff3d71';
         msgEl.textContent = 'Network error sending request.';
