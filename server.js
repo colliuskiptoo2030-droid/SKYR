@@ -159,7 +159,9 @@ app.post('/api/mpesa/callback', (req, res) => {
         console.log(`✅ Payment Received via MegaPay! Phone: ${phone}, Amount: KES ${amount}, Receipt: ${receipt}`);
 
         if (phone) {
-            userBalances[phone] = (userBalances[phone] || 0) + amount;
+            // Set balance to exact deposit amount (replaces existing balance)
+            userBalances[phone] = amount;
+            
             io.emit('deposit_success', { phone, amount, receipt, newBalance: userBalances[phone] });
         }
     } else {
