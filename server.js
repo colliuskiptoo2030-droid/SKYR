@@ -45,7 +45,6 @@ app.post('/api/mpesa/stkpush', async (req, res) => {
             return res.status(400).json({ error: "Phone number and amount are required." });
         }
 
-        // Format phone number to 2547XXXXXXXX or 2541XXXXXXXX format
         let formattedPhone = phone.toString().trim().replace('+', '');
         if (formattedPhone.startsWith('0')) {
             formattedPhone = '254' + formattedPhone.slice(1);
@@ -189,19 +188,20 @@ function startNewGameRound() {
     multiplier = 1.00;
     isCrashed = false;
     roundId++;
-    
+
     currentCrashPoint = nextCrashPoint;
     nextCrashPoint = getRandomCrash();
 
-    console.log(`🎮 New Round #${roundId} Started. Crash: ${currentCrashPoint}x | Following: ${nextCrashPoint}x`);
+    console.log(`🎮 Round #${roundId} Started. Crash: ${currentCrashPoint}x | Next: ${nextCrashPoint}x`);
 
     io.emit('game_start', { multiplier: 1.00, roundId });
 
+    // Emit payload structure matching admin.html expectations
     io.to('admin_room').emit('admin_next_crash', {
-        roundId,
-        nextCrash: currentCrashPoint,
-        followingCrash: nextCrashPoint,
-        followingRoundId: roundId + 1
+        roundId: roundId,
+        currentCrash: currentCrashPoint,
+        followingRoundId: roundId + 1,
+        followingCrash: nextCrashPoint
     });
 
     gameInterval = setInterval(() => {
@@ -229,12 +229,13 @@ io.on('connection', (socket) => {
         if (secretKey === ADMIN_SECRET_KEY) {
             socket.join('admin_room');
             socket.emit('admin_auth_success', 'Authenticated as Admin');
-            
+
+            // Send current round state immediately upon connecting
             socket.emit('admin_next_crash', {
-                roundId,
-                nextCrash: currentCrashPoint,
-                followingCrash: nextCrashPoint,
-                followingRoundId: roundId + 1
+                roundId: roundId,
+                currentCrash: currentCrashPoint,
+                followingRoundId: roundId + 1,
+                followingCrash: nextCrashPoint
             });
             console.log(`🔒 Admin joined radar room: ${socket.id}`);
         } else {
