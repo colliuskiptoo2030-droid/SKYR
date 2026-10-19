@@ -87,6 +87,96 @@ app.post('/api/mpesa/stkpush', async (req, res) => {
         }
 
         if (data.status === 'success' || data.ResponseCode === 0 || data.ResponseCode === "0") {
+            return res.status(20```javascript
+require('dotenv').config();
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: "*" }
+});
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static assets directly from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Route 1: Serve Main Game Page
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Route 2: Serve Admin Radar Page
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// In-Memory Balance Storage
+const userBalances = {};
+
+const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'SUPER_SECRET_ADMIN_KEY';
+
+// ==========================================
+// 1. MEGAPAY M-PESA API ENDPOINTS
+// ==========================================
+
+// Initiate M-Pesa STK Push via MegaPay
+app.post('/api/mpesa/stkpush', async (req, res) => {
+    try {
+        const { phone, amount, userId } = req.body;
+
+        if (!phone || !amount) {
+            return res.status(400).json({ error: "Phone number and amount are required." });
+        }
+
+        // Format phone number to 2547XXXXXXXX or 2541XXXXXXXX format
+        let formattedPhone = phone.toString().trim().replace('+', '');
+        if (formattedPhone.startsWith('0')) {
+            formattedPhone = '254' + formattedPhone.slice(1);
+        } else if (formattedPhone.startsWith('7') || formattedPhone.startsWith('1')) {
+            formattedPhone = '254' + formattedPhone;
+        }
+
+        console.log(`⏳ Requesting MegaPay STK Push for ${formattedPhone}...`);
+
+        const payload = {
+            api_key: process.env.MEGAPAY_API_KEY,
+            email: process.env.MEGAPAY_EMAIL,
+            amount: Math.round(Number(amount)),
+            msisdn: formattedPhone,
+            reference: userId || `USER_${formattedPhone}`
+        };
+
+        const response = await fetch('[https://megapay.co.ke/backend/v1/initiatestk](https://megapay.co.ke/backend/v1/initiatestk)', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const rawText = await response.text();
+        console.log("RAW MEGAPAY RESPONSE:", rawText);
+
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch (parseErr) {
+            console.error("Non-JSON response received from MegaPay:", rawText);
+            return res.status(502).json({
+                error: "MegaPay server returned an HTML error or invalid response.",
+                raw: rawText.substring(0, 200)
+            });
+        }
+
+        if (data.status === 'success' || data.ResponseCode === 0 || data.ResponseCode === "0") {
             return res.status(200).json({
                 success: true,
                 message: "STK Push prompt sent to your phone.",
@@ -178,23 +268,34 @@ let isCrashed = false;
 let gameInterval = null;
 let roundId = 0;
 
+function getRandomCrash() {
+    return parseFloat((Math.random() * (20 - 1.05) + 1.05).toFixed(2));
+}
+
+let currentCrashPoint = getRandomCrash();
+let nextCrashPoint = getRandomCrash();
+
 function startNewGameRound() {
     multiplier = 1.00;
     isCrashed = false;
     roundId++;
     
-    const crashPoint = parseFloat((Math.random() * (20 - 1.05) + 1.05).toFixed(2));
-    console.log(`🎮 New Round #${roundId} Started. Will crash at: ${crashPoint}x`);
+    currentCrashPoint = nextCrashPoint;
+    nextCrashPoint = getRandomCrash();
+
+    console.log(`🎮 New Round #${roundId} Started. Crash: ${currentCrashPoint}x | Following: ${nextCrashPoint}x`);
 
     io.emit('game_start', { multiplier: 1.00, roundId });
 
     io.to('admin_room').emit('admin_next_crash', {
         roundId,
-        nextCrash: crashPoint
+        nextCrash: currentCrashPoint,
+        followingCrash: nextCrashPoint,
+        followingRoundId: roundId + 1
     });
 
     gameInterval = setInterval(() => {
-        if (multiplier >= crashPoint) {
+        if (multiplier >= currentCrashPoint) {
             isCrashed = true;
             clearInterval(gameInterval);
             console.log(`💥 CRASHED at ${multiplier.toFixed(2)}x`);
@@ -218,6 +319,13 @@ io.on('connection', (socket) => {
         if (secretKey === ADMIN_SECRET_KEY) {
             socket.join('admin_room');
             socket.emit('admin_auth_success', 'Authenticated as Admin');
+            
+            socket.emit('admin_next_crash', {
+                roundId,
+                nextCrash: currentCrashPoint,
+                followingCrash: nextCrashPoint,
+                followingRoundId: roundId + 1
+            });
             console.log(`🔒 Admin joined radar room: ${socket.id}`);
         } else {
             socket.emit('admin_auth_failed', 'Invalid secret key');
