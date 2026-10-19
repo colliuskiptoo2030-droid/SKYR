@@ -6,10 +6,14 @@
   <script src="/socket.io/socket.io.js"></script>
   <style>
     body { background: #070a12; color: #fff; font-family: sans-serif; padding: 20px; }
-    .card { background: #101725; border: 1px solid #222c40; padding: 24px; border-radius: 12px; max-width: 500px; margin: auto; }
-    .crash-box { font-size: 52px; font-weight: 900; color: #ffb62e; text-align: center; margin: 20px 0; background: #182236; padding: 20px; border-radius: 10px; }
+    .card { background: #101725; border: 1px solid #222c40; padding: 24px; border-radius: 12px; max-width: 600px; margin: auto; }
+    .radar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+    .radar-box-container { background: #182236; padding: 15px; border-radius: 10px; text-align: center; }
+    .label { font-size: 12px; color: #7e8ba1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .crash-box { font-size: 38px; font-weight: 900; color: #ffb62e; }
     .status { font-size: 14px; color: #22d39a; text-align: center; }
     .history-list { font-family: monospace; max-height: 200px; overflow-y: auto; background: #090e18; padding: 10px; border-radius: 6px; }
+    .round-tag { font-size: 12px; color: #a0aec0; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -18,8 +22,19 @@
     <h2>🎯 Admin Crash Radar</h2>
     <div class="status" id="status">Connecting to radar...</div>
     
-    <div style="text-align: center; margin-top: 15px; color: #7e8ba1;">UPCOMING CRASH POINT</div>
-    <div class="crash-box" id="nextCrash">WAITING...</div>
+    <div class="radar-grid">
+      <div class="radar-box-container">
+        <div class="label">Current Round</div>
+        <div class="crash-box" id="currentCrash">WAITING...</div>
+        <div class="round-tag" id="currentRoundLabel">Round #--</div>
+      </div>
+      
+      <div class="radar-box-container">
+        <div class="label">Next Round</div>
+        <div class="crash-box" id="followingCrash">WAITING...</div>
+        <div class="round-tag" id="followingRoundLabel">Round #--</div>
+      </div>
+    </div>
 
     <h3>Crash History Feed</h3>
     <div class="history-list" id="feed"></div>
@@ -28,6 +43,12 @@
   <script>
     const socket = io();
     const SECRET_KEY = 'SUPER_SECRET_ADMIN_KEY'; // Matches key in server.js
+
+    function getMultiplierColor(val) {
+      if (val < 1.5) return '#ff3d71';
+      if (val >= 10.0) return '#22d39a';
+      return '#ffb62e';
+    }
 
     socket.on('connect', () => {
       document.getElementById('status').textContent = 'Authenticating...';
@@ -44,19 +65,21 @@
     });
 
     socket.on('admin_next_crash', (data) => {
-      const crashDisplay = document.getElementById('nextCrash');
-      crashDisplay.textContent = data.nextCrash.toFixed(2) + 'x';
-      
-      if (data.nextCrash < 1.5) {
-        crashDisplay.style.color = '#ff3d71';
-      } else if (data.nextCrash >= 10.0) {
-        crashDisplay.style.color = '#22d39a';
-      } else {
-        crashDisplay.style.color = '#ffb62e';
-      }
+      // 1. Update Current Round Crash Display
+      const currentBox = document.getElementById('currentCrash');
+      currentBox.textContent = data.currentCrash.toFixed(2) + 'x';
+      currentBox.style.color = getMultiplierColor(data.currentCrash);
+      document.getElementById('currentRoundLabel').textContent = `Round #${data.roundId}`;
 
+      // 2. Update Following Round Crash Display
+      const followingBox = document.getElementById('followingCrash');
+      followingBox.textContent = data.followingCrash.toFixed(2) + 'x';
+      followingBox.style.color = getMultiplierColor(data.followingCrash);
+      document.getElementById('followingRoundLabel').textContent = `Round #${data.followingRoundId}`;
+
+      // 3. Log to History Feed
       const item = document.createElement('div');
-      item.textContent = `[Round #${data.roundId}] Target: ${data.nextCrash.toFixed(2)}x`;
+      item.textContent = `[Round #${data.roundId}] Current: ${data.currentCrash.toFixed(2)}x | Next (#${data.followingRoundId}): ${data.followingCrash.toFixed(2)}x`;
       document.getElementById('feed').prepend(item);
     });
   </script>
