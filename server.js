@@ -87,7 +87,6 @@ app.post('/api/mpesa/stkpush', async (req, res) => {
         }
 
         if (data.status === 'success' || data.ResponseCode === 0 || data.ResponseCode === "0") {
-            return res.status(20```javascript
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
