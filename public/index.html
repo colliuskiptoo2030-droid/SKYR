@@ -795,8 +795,8 @@
       <h2>Deposit via M-Pesa</h2>
       <label>Phone Number</label>
       <input id="stkPhone" type="text" placeholder="254700000000" value="254700000000">
-      <label>Amount (Min KSh 100)</label>
-      <input id="stkAmount" type="number" min="100" value="100">
+      <label>Amount (Min KSh 150)</label>
+      <input id="stkAmount" type="number" min="150" value="150">
       <button class="btn btn-bet" id="stkBtn" style="width: 100%; margin-top: 10px;" onclick="sendPaymentRequest()">Send STK Push</button>
       <p id="stkMsg" class="modal-msg"></p>
     </div>
@@ -1299,10 +1299,10 @@
         return alert('Please enter a valid phone number.');
       }
 
-      if (isNaN(amount) || amount < 100) {
+      if (isNaN(amount) || amount < 150) {
         msgEl.style.color = '#ff3d71';
-        msgEl.textContent = 'Minimum deposit amount is KSh 100.';
-        return alert('Minimum deposit amount is KSh 100.');
+        msgEl.textContent = 'Minimum deposit amount is KSh 150.';
+        return alert('Minimum deposit amount is KSh 150.');
       }
 
       btn.disabled = true;
