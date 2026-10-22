@@ -61,7 +61,8 @@ app.post('/api/mpesa/stkpush', async (req, res) => {
             msisdn: formattedPhone,
             reference: userId || `USER_${formattedPhone}`
         };
-
+        console.log("AMOUNT RECEIVED FROM SKYRUSH:", amount);
+        console.log("AMOUNT SENT TO MEGAPAY:", payload.amount);
         const response = await fetch('https://megapay.co.ke/backend/v1/initiatestk', {
             method: 'POST',
             headers: {
