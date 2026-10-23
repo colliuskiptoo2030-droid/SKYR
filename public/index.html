@@ -1659,7 +1659,6 @@ function toggleSound() {
     socket.on('game_crash', (data) => {
     inRound = false;
     stopFlightMelody();
-    playSound('crash');
 
       const crashPoint = parseFloat(data.multiplier);
 
