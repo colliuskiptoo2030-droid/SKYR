@@ -947,48 +947,173 @@
       }
     }
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+   
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function playSound(type) {
-      if (!soundEnabled) return;
+let melodyTimer = null;
+let melodyIndex = 0;
+let melodyGeneration = 0;
 
-      try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+// Soft electronic melody played during flight
+const flightMelody = [
+  523.25, 659.25, 783.99, 659.25,
+  587.33, 698.46, 880.00, 698.46,
+  523.25, 659.25, 783.99, 987.77,
+  880.00, 783.99, 659.25, 587.33
+];
 
-        if (type === 'bet') {
-          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.12);
-          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.12);
-        } else if (type === 'win') {
-          osc.frequency.setValueAtTime(523, audioCtx.currentTime);
-          osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
-          osc.frequency.setValueAtTime(783, audioCtx.currentTime + 0.2);
-          gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.3);
-        } else if (type === 'crash') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(260, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.5);
-          gain.gain.setValueAtTime(0.28, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.5);
-        }
-      } catch (e) {}
+function playTone(frequency, duration, volume = 0.045) {
+  if (!soundEnabled) return;
+
+  try {
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(frequency, now);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(volume, now + 0.025);
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      now + duration
+    );
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(now);
+    osc.stop(now + duration + 0.03);
+  } catch (e) {}
+}
+
+function startFlightMelody() {
+  if (!soundEnabled || melodyTimer !== null) return;
+
+  audioCtx.resume().catch(() => {});
+
+  const generation = ++melodyGeneration;
+  melodyIndex = 0;
+
+  function nextNote() {
+    if (
+      !soundEnabled ||
+      !inRound ||
+      generation !== melodyGeneration
+    ) {
+      melodyTimer = null;
+      return;
     }
 
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      document.getElementById('soundBtn').textContent = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+    playTone(flightMelody[melodyIndex], 0.24, 0.035);
+
+    melodyIndex = (melodyIndex + 1) % flightMelody.length;
+    melodyTimer = setTimeout(nextNote, 280);
+  }
+
+  nextNote();
+}
+
+function stopFlightMelody() {
+  melodyGeneration++;
+
+  if (melodyTimer !== null) {
+    clearTimeout(melodyTimer);
+    melodyTimer = null;
+  }
+}
+
+// Plane engine dropping in pitch and fading away after a crash
+function playPlaneFlyingAway() {
+  if (!soundEnabled) return;
+
+  try {
+    audioCtx.resume().catch(() => {});
+
+    const now = audioCtx.currentTime;
+    const duration = 1.8;
+
+    const engine = audioCtx.createOscillator();
+    const undertone = audioCtx.createOscillator();
+    const filter = audioCtx.createBiquadFilter();
+    const gain = audioCtx.createGain();
+
+    engine.type = 'sawtooth';
+    engine.frequency.setValueAtTime(190, now);
+    engine.frequency.exponentialRampToValueAtTime(
+      38, now + duration
+    );
+
+    undertone.type = 'triangle';
+    undertone.frequency.setValueAtTime(95, now);
+    undertone.frequency.exponentialRampToValueAtTime(
+      25, now + duration
+    );
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1100, now);
+    filter.frequency.exponentialRampToValueAtTime(
+      180, now + duration
+    );
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.09, now + 0.12);
+    gain.gain.exponentialRampToValueAtTime(
+      0.001, now + duration
+    );
+
+    engine.connect(filter);
+    undertone.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    engine.start(now);
+    undertone.start(now);
+    engine.stop(now + duration);
+    undertone.stop(now + duration);
+  } catch (e) {}
+}
+
+function playSound(type) {
+  if (!soundEnabled) return;
+
+  audioCtx.resume().catch(() => {});
+
+  if (type === 'crash') {
+    playPlaneFlyingAway();
+    return;
+  }
+
+  if (type === 'bet') {
+    playTone(440, 0.12, 0.07);
+    return;
+  }
+
+  if (type === 'win') {
+    playTone(523.25, 0.13, 0.08);
+    setTimeout(() => playTone(659.25, 0.13, 0.08), 110);
+    setTimeout(() => playTone(783.99, 0.22, 0.08), 220);
+  }
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+
+  $('soundBtn').textContent = soundEnabled
+    ? '🔊 Sound On'
+    : '🔇 Sound Off';
+
+  if (!soundEnabled) {
+    stopFlightMelody();
+  } else {
+    audioCtx.resume().catch(() => {});
+
+    if (inRound) {
+      startFlightMelody();
     }
+  }
+}
 
     const $ = id => document.getElementById(id);
     const money = x => 'KSh ' + Number(x).toFixed(2);
@@ -1486,6 +1611,7 @@
 
     socket.on('game_start', (data) => {
       inRound = true;
+      startFlightMelody();
       roundNo++;
       mult = 1.00;
       generateLiveBots();
@@ -1531,8 +1657,9 @@
     });
 
     socket.on('game_crash', (data) => {
-      inRound = false;
-      playSound('crash');
+    inRound = false;
+    stopFlightMelody();
+    playSound('crash');
 
       const crashPoint = parseFloat(data.multiplier);
 
