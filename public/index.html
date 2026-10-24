@@ -632,7 +632,7 @@
           <span>👤</span>
           <span class="user-name" id="navUserName">User</span>
           <span style="color: #7e8ba1;">|</span>
-          <span id="navUserBalance">KSh 1,000.00</span>
+          <span id="navUserBalance">KSh 0.00</span>
         </div>
         <button class="navbtn danger" onclick="handleLogout()">Logout</button>
       </div>
@@ -751,7 +751,7 @@
       <div class="card">
         <h2>Virtual Wallet</h2>
         <div class="statgrid">
-          <div class="stat">Balance<strong id="wbal">KSh 1,000.00</strong></div>
+          <div class="stat">Balance<strong id="wbal">KSh 0.00</strong></div>
           <div class="stat">Virtual Deposits<strong id="wdep">KSh 0.00</strong></div>
           <div class="stat">Virtual Cashouts<strong id="wout">KSh 0.00</strong></div>
         </div>
@@ -865,7 +865,7 @@
   <script>
     const socket = io();
 
-    let balance = 1000, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
+    let balance = 0, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
     let inRound = false, mult = 1.00;
     let avatarChoice = '🚀';
     let soundEnabled = true;
@@ -1119,7 +1119,7 @@ function toggleSound() {
     const money = x => 'KSh ' + Number(x).toFixed(2);
 
     function renderUI() {
-      if ($('bal')) $('bal').textContent = 'KSh 1000.00';
+      if ($('bal')) $('bal').textContent = 'KSh 0.00';
       if ($('wbal')) $('wbal').textContent = money(balance);
       if ($('wdep')) $('wdep').textContent = money(totalDeposited);
       if ($('wout')) $('wout').textContent = money(totalWithdrawn);
@@ -1223,7 +1223,7 @@ function toggleSound() {
         name,
         email,
         pass,
-        balance: 1000.00,
+        balance: 0.00,
         totalDeposited: 0,
         totalWithdrawn: 0
       };
