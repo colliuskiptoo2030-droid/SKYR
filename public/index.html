@@ -865,7 +865,7 @@
   <script>
     const socket = io();
 
-    let balance = 0, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
+    let balance = 1000, totalDeposited = 0, totalWithdrawn = 0, roundNo = 0, volume = 0;
     let inRound = false, mult = 1.00;
     let avatarChoice = '🚀';
     let soundEnabled = true;
@@ -1119,7 +1119,7 @@ function toggleSound() {
     const money = x => 'KSh ' + Number(x).toFixed(2);
 
     function renderUI() {
-      if ($('bal')) $('bal').textContent = 'KSh 0.00';
+      if ($('bal')) $('bal').textContent = 'KSh 1000.00';
       if ($('wbal')) $('wbal').textContent = money(balance);
       if ($('wdep')) $('wdep').textContent = money(totalDeposited);
       if ($('wout')) $('wout').textContent = money(totalWithdrawn);
@@ -1223,7 +1223,7 @@ function toggleSound() {
         name,
         email,
         pass,
-        balance: 0.00,
+        balance: 1000.00,
         totalDeposited: 0,
         totalWithdrawn: 0
       };
