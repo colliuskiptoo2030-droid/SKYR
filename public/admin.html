@@ -309,7 +309,7 @@
 
       <div class="radar">
         <div class="radar-box">
-          <div class="radar-label">Next Crash Point</div>
+         <div class="radar-label">Current Crash Point</div>
           <div id="nextCrash" class="multiplier">--</div>
         </div>
 
@@ -423,6 +423,43 @@
 
     socket.on('admin_auth_failed', () => {
       setConnectionStatus(false, 'Admin authentication failed');
+    });
+
+    // Reset the current multiplier when a new round starts
+    socket.on('game_start', (data) => {
+      nextCrashElement.textContent = '1.00x';
+
+      if (data && data.round !== undefined) {
+        currentRoundElement.textContent = data.round;
+      } else {
+        currentRoundElement.textContent = 'In progress';
+      }
+    });
+
+    // Update the current crash-point display during flight
+    socket.on('multiplier_update', (data) => {
+      if (!data) return;
+
+      const value =
+        data.multiplier !== undefined ? data.multiplier : data;
+
+      nextCrashElement.textContent = formatMultiplier(value);
+    });
+
+    // Show the final multiplier when the round crashes
+    socket.on('game_crash', (data) => {
+      if (!data) return;
+
+      const value =
+        data.multiplier !== undefined
+          ? data.multiplier
+          : data.crashPoint;
+
+      nextCrashElement.textContent = formatMultiplier(value);
+
+      if (value !== undefined && value !== null) {
+        lastCrashElement.textContent = formatMultiplier(value);
+      }
     });
 
     socket.on('admin_next_crash', (data) => {
