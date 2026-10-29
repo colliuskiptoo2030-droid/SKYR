@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>SkyRush - Admin Multiplier Radar</title>
+  <title>SkyRush PREDICTOR </title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
     body { background: #070a12; color: #fff; font-family: sans-serif; padding: 20px; }
@@ -61,7 +61,7 @@
 
     socket.on('admin_auth_failed', () => {
       document.getElementById('status').textContent = '🔴 Auth Failed! Invalid Key.';
-      document.getElementById('status').style.color = '#ff3d71';
+      document.getElementById('status').style.color = '#ff1493';
     });
 
     socket.on('admin_next_crash', (data) => {
