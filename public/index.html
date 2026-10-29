@@ -660,6 +660,13 @@
     <!-- GAME PAGE -->
     <section id="game" class="page active">
       <div class="pills" id="rounds"></div>
+      <div class="card" style="margin-bottom:16px;text-align:center;">
+  <h3 style="margin:0 0 10px;">Current Running Round</h3>
+  <div id="nextCrash"
+       style="font-size:36px;font-weight:900;color:#ff3d71;">
+    1.00x
+  </div>
+</div>
 
       <div class="game-layout">
         <!-- FIRST: PLANE ENGINE & DUAL BET CONTROLS -->
@@ -1614,6 +1621,9 @@ function toggleSound() {
       startFlightMelody();
       roundNo++;
       mult = 1.00;
+      if ($('nextCrash')) {
+  $('nextCrash').textContent = '1.00x';
+}
       generateLiveBots();
 
       $('mult').classList.remove('crashed');
@@ -1640,6 +1650,9 @@ function toggleSound() {
 
     socket.on('multiplier_update', (data) => {
       mult = parseFloat(data.multiplier);
+      if ($('nextCrash') && Number.isFinite(mult)) {
+  $('nextCrash').textContent = mult.toFixed(2) + 'x';
+}
       $('mult').textContent = mult.toFixed(2) + 'x';
       updateLiveBots(mult);
 
@@ -1662,7 +1675,9 @@ function toggleSound() {
     playSound('crash');
       
       const crashPoint = parseFloat(data.multiplier);
-
+if ($('nextCrash') && Number.isFinite(crashPoint)) {
+  $('nextCrash').textContent = crashPoint.toFixed(2) + 'x';
+}
       $('mult').textContent = 'FLEW AWAY @ ' + crashPoint.toFixed(2) + 'x';
       $('mult').classList.add('crashed');
 
