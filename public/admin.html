@@ -1,295 +1,500 @@
-```html
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SKYRUSH PREDICTOR</title>
-
-  <script src="/socket.io/socket.io.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyRush Predictor</title>
 
   <style>
     :root {
-      --bg: #050507;
-      --card: #100b14;
-      --panel: #190d1d;
-      --border: #47203d;
+      --bg: #ffffff;
+      --card: #ffffff;
+      --panel: #fff0f5;
+      --border: #f3c4d5;
+      --text: #20202a;
+      --muted: #777784;
       --pink: #ff3d71;
-      --hot-pink: #ff1493;
-      --light-pink: #ff8fc7;
-      --text: #ffffff;
-      --muted: #c09ab2;
-      --green: #22d39a;
-      --gold: #ffb62e;
+      --green: #159b68;
+      --gold: #e9a008;
+      --red: #e53950;
+      --shadow: 0 4px 18px rgba(30, 20, 40, 0.07);
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+
     body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
       background: var(--bg);
       color: var(--text);
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      margin: 0;
-      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
     }
 
-    .card {
-      background: linear-gradient(145deg, #130b17, #08080d);
-      border: 1px solid var(--border);
-      padding: 24px;
-      border-radius: 16px;
-      max-width: 600px;
-      margin: 20px auto;
-      box-shadow: 0 0 30px rgba(255, 20, 147, 0.12);
+    .container,
+    .dashboard,
+    .main-container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
     }
 
-    h2 {
+    header,
+    .header {
       text-align: center;
-      color: var(--hot-pink);
-      margin-top: 0;
-      text-shadow: 0 0 12px rgba(255, 20, 147, 0.45);
+      margin-bottom: 24px;
     }
 
+    h1,
+    .title {
+      color: var(--pink);
+      font-size: clamp(25px, 5vw, 38px);
+      font-weight: 800;
+      margin: 0 0 8px;
+    }
+
+    h2,
     h3 {
-      color: var(--light-pink);
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 10px;
+      color: var(--text);
+    }
+
+    p {
+      line-height: 1.5;
+    }
+
+    .subtitle,
+    .muted,
+    .description {
+      color: var(--muted);
+    }
+
+    .card,
+    .panel,
+    .section,
+    .radar-card,
+    .prediction-card,
+    .history-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .radar,
+    .radar-container,
+    .prediction-container {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .radar-box,
+    .prediction-box,
+    .multiplier-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 16px;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .label,
+    .prediction-label,
+    .radar-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .multiplier,
+    .crash-point,
+    .prediction-value,
+    .radar-value {
+      color: var(--pink);
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .next-round {
+      color: var(--green);
     }
 
     .status {
-      font-size: 13px;
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 20px;
+      background: #e8f8ef;
       color: var(--green);
-      text-align: center;
-      background: #120d16;
-      border: 1px solid var(--border);
-      padding: 12px;
-      border-radius: 8px;
-      margin: 18px 0;
+      font-weight: 700;
+      font-size: 12px;
     }
 
-    .radar-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
+    .status.waiting {
+      background: #fff4d8;
+      color: #996500;
+    }
+
+    .status.error {
+      background: #ffe9ec;
+      color: var(--red);
+    }
+
+    .history,
+    .history-list,
+    #history,
+    #historyFeed {
+      background: #ffffff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .history-item,
+    .history-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 8px;
+      border-bottom: 1px solid #f0e5eb;
+    }
+
+    .history-item:last-child,
+    .history-row:last-child {
+      border-bottom: none;
+    }
+
+    button,
+    .button {
+      border: none;
+      border-radius: 9px;
+      padding: 11px 18px;
+      background: var(--pink);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    button:hover,
+    .button:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 12px;
+      margin: 6px 0 12px;
+      font: inherit;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: 2px solid rgba(255, 61, 113, 0.25);
+      border-color: var(--pink);
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border);
       margin: 20px 0;
     }
 
-    .radar-box-container {
-      background: linear-gradient(160deg, #241025, #100b15);
-      border: 1px solid #64234f;
-      padding: 18px 10px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: inset 0 0 15px rgba(255, 20, 147, 0.05);
-    }
-
-    .label {
-      font-size: 11px;
-      color: var(--light-pink);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 12px;
-    }
-
-    .crash-box {
-      font-size: clamp(25px, 7vw, 38px);
-      font-weight: 900;
+    a {
       color: var(--pink);
-      text-shadow: 0 0 15px rgba(255, 61, 113, 0.35);
-      overflow-wrap: anywhere;
     }
 
-    .round-tag {
-      font-size: 12px;
+    .green {
+      color: var(--green);
+    }
+
+    .pink {
+      color: var(--pink);
+    }
+
+    .gold {
+      color: var(--gold);
+    }
+
+    .red {
+      color: var(--red);
+    }
+
+    footer {
+      text-align: center;
       color: var(--muted);
-      margin-top: 10px;
-    }
-
-    .history-list {
-      font-family: monospace;
+      padding: 20px 0 8px;
       font-size: 12px;
-      line-height: 1.8;
-      max-height: 220px;
-      overflow-y: auto;
-      background: #08060b;
-      border: 1px solid var(--border);
-      padding: 12px;
-      border-radius: 8px;
-      color: var(--light-pink);
     }
 
-    .history-list div {
-      padding: 5px 0;
-      border-bottom: 1px solid #241322;
-      overflow-wrap: anywhere;
-    }
-
-    .history-list div:first-child {
-      color: var(--hot-pink);
-    }
-
-    /* Pink scrollbar */
-    .history-list::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .history-list::-webkit-scrollbar-track {
-      background: #09060c;
-    }
-
-    .history-list::-webkit-scrollbar-thumb {
-      background: var(--hot-pink);
-      border-radius: 10px;
-    }
-
-    @media (max-width: 420px) {
+    @media (max-width: 600px) {
       body {
-        padding: 10px;
+        padding: 12px;
       }
 
-      .card {
-        padding: 15px;
-        margin: 10px auto;
+      .card,
+      .panel,
+      .section,
+      .radar-card,
+      .prediction-card,
+      .history-card {
+        padding: 14px;
+        border-radius: 11px;
       }
 
-      .radar-grid {
-        gap: 8px;
+      .radar,
+      .radar-container,
+      .prediction-container {
+        gap: 10px;
       }
 
-      .radar-box-container {
-        padding: 15px 6px;
+      .radar-box,
+      .prediction-box,
+      .multiplier-box {
+        padding: 17px 9px;
       }
 
-      .label {
-        font-size: 10px;
-        letter-spacing: 1px;
+      .history-item,
+      .history-row {
+        flex-wrap: wrap;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="card">
-    <h2>🎯 SKYRUSH CRASH RADAR</h2>
+  <div class="container">
+    <header>
+      <h1>SKYRUSH PREDICTOR</h1>
+      <p class="subtitle">Crash Multiplier Radar</p>
+      <span id="connectionStatus" class="status waiting">
+        Connecting...
+      </span>
+    </header>
 
-    <div class="status" id="status">
-      Connecting to radar...
-    </div>
+    <section class="card">
+      <h2>Live Radar</h2>
+      <p class="muted">
+        Upcoming round predictions
+      </p>
 
-    <div class="radar-grid">
-      <div class="radar-box-container">
-        <div class="label">Current Round</div>
-        <div class="crash-box" id="currentCrash">WAITING...</div>
-        <div class="round-tag" id="currentRoundLabel">Round #--</div>
+      <div class="radar">
+        <div class="radar-box">
+          <div class="radar-label">Next Crash Point</div>
+          <div id="nextCrash" class="multiplier">--</div>
+        </div>
+
+        <div class="radar-box">
+          <div class="radar-label">Following Round</div>
+          <div id="followingCrash" class="multiplier next-round">--</div>
+        </div>
       </div>
+    </section>
 
-      <div class="radar-box-container">
-        <div class="label">Next Round</div>
-        <div class="crash-box" id="followingCrash">WAITING...</div>
-        <div class="round-tag" id="followingRoundLabel">Round #--</div>
+    <section class="card">
+      <h2>Round Information</h2>
+
+      <p>
+        Current round:
+        <strong id="currentRound">Waiting...</strong>
+      </p>
+
+      <p>
+        Last crash point:
+        <strong id="lastCrash">--</strong>
+      </p>
+
+      <p>
+        Connection:
+        <strong id="connectionText">Connecting to server...</strong>
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Recent Crash History</h2>
+      <div id="historyFeed" class="history">
+        <p class="muted">Waiting for crash history...</p>
       </div>
-    </div>
+    </section>
 
-    <h3>💗 Crash History Feed</h3>
-
-    <div class="history-list" id="feed">
-      <div>Waiting for crash history...</div>
-    </div>
+    <footer>
+      SkyRush Predictor · For informational and demonstration purposes
+    </footer>
   </div>
+
+  <script src="/socket.io/socket.io.js"></script>
 
   <script>
     const socket = io();
 
+    /*
+      IMPORTANT:
+      Set this to the same admin secret expected by your server.
+      A secret placed in browser JavaScript is visible to visitors.
+      For real security, authenticate through a server-side endpoint.
+    */
     const SECRET_KEY = 'SUPER_SECRET_ADMIN_KEY';
 
-    function getMultiplierColor(val) {
-      if (val < 1.5) return '#ff1493';
-      if (val >= 10.0) return '#22d39a';
-      return '#ff69b4';
+    const nextCrashElement = document.getElementById('nextCrash');
+    const followingCrashElement = document.getElementById('followingCrash');
+    const currentRoundElement = document.getElementById('currentRound');
+    const lastCrashElement = document.getElementById('lastCrash');
+    const connectionStatusElement = document.getElementById('connectionStatus');
+    const connectionTextElement = document.getElementById('connectionText');
+    const historyFeedElement = document.getElementById('historyFeed');
+
+    function setConnectionStatus(connected, message) {
+      connectionStatusElement.textContent = message;
+      connectionTextElement.textContent = message;
+
+      connectionStatusElement.classList.toggle('waiting', !connected);
+      connectionStatusElement.classList.toggle('error', !connected);
+      connectionStatusElement.classList.toggle('status', true);
+
+      if (connected) {
+        connectionStatusElement.classList.remove('error');
+      }
+    }
+
+    function formatMultiplier(value) {
+      if (value === undefined || value === null || value === '') {
+        return '--';
+      }
+
+      const number = Number(value);
+
+      if (!Number.isFinite(number)) {
+        return String(value);
+      }
+
+      return number.toFixed(2) + 'x';
     }
 
     socket.on('connect', () => {
-      const status = document.getElementById('status');
+      setConnectionStatus(true, 'Connected');
 
-      status.textContent = 'Authenticating...';
-      status.style.color = '#ff69b4';
-
+      /*
+        These events must match the authentication protocol
+        already implemented by your server.js.
+      */
       socket.emit('join_admin', SECRET_KEY);
     });
 
-    socket.on('admin_auth_success', () => {
-      const status = document.getElementById('status');
+    socket.on('disconnect', () => {
+      setConnectionStatus(false, 'Disconnected');
+    });
 
-      status.textContent = '🟢 Connected & Receiving Live Telemetry';
-      status.style.color = '#22d39a';
+    socket.on('connect_error', () => {
+      setConnectionStatus(false, 'Connection error');
+    });
+
+    socket.on('admin_auth_success', () => {
+      setConnectionStatus(true, 'Admin connected');
     });
 
     socket.on('admin_auth_failed', () => {
-      const status = document.getElementById('status');
-
-      status.textContent = '🔴 Authentication Failed! Invalid Key.';
-      status.style.color = '#ff1493';
-    });
-
-    socket.on('disconnect', () => {
-      const status = document.getElementById('status');
-
-      status.textContent = 'Connection lost. Reconnecting...';
-      status.style.color = '#ff1493';
+      setConnectionStatus(false, 'Admin authentication failed');
     });
 
     socket.on('admin_next_crash', (data) => {
-      if (
-        !data ||
-        !Number.isFinite(Number(data.currentCrash)) ||
-        !Number.isFinite(Number(data.followingCrash))
-      ) {
+      if (!data || typeof data !== 'object') return;
+
+      if (data.nextCrash !== undefined) {
+        nextCrashElement.textContent = formatMultiplier(data.nextCrash);
+      } else if (data.next !== undefined) {
+        nextCrashElement.textContent = formatMultiplier(data.next);
+      }
+
+      if (data.followingCrash !== undefined) {
+        followingCrashElement.textContent =
+          formatMultiplier(data.followingCrash);
+      } else if (data.following !== undefined) {
+        followingCrashElement.textContent =
+          formatMultiplier(data.following);
+      }
+
+      if (data.currentRound !== undefined) {
+        currentRoundElement.textContent = data.currentRound;
+      }
+
+      if (data.lastCrash !== undefined) {
+        lastCrashElement.textContent = formatMultiplier(data.lastCrash);
+      }
+
+      if (Array.isArray(data.history)) {
+        renderHistory(data.history);
+      }
+    });
+
+    function renderHistory(history) {
+      historyFeedElement.replaceChildren();
+
+      if (!history.length) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.className = 'muted';
+        emptyMessage.textContent = 'No crash history available.';
+        historyFeedElement.appendChild(emptyMessage);
         return;
       }
 
-      const current = Number(data.currentCrash);
-      const following = Number(data.followingCrash);
+      history.slice(0, 20).forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'history-item';
 
-      const currentBox = document.getElementById('currentCrash');
+        const round = document.createElement('span');
+        const multiplier = document.createElement('strong');
 
-      currentBox.textContent = current.toFixed(2) + 'x';
-      currentBox.style.color = getMultiplierColor(current);
+        if (item && typeof item === 'object') {
+          round.textContent =
+            item.round !== undefined ? 'Round ' + item.round : 'Round';
 
-      document.getElementById('currentRoundLabel').textContent =
-        `Round #${data.roundId ?? '--'}`;
+          const value =
+            item.crashPoint !== undefined ? item.crashPoint :
+            item.multiplier !== undefined ? item.multiplier :
+            item.crash !== undefined ? item.crash : '--';
 
-      const followingBox = document.getElementById('followingCrash');
+          multiplier.textContent = formatMultiplier(value);
+        } else {
+          round.textContent = 'Round';
+          multiplier.textContent = formatMultiplier(item);
+        }
 
-      followingBox.textContent = following.toFixed(2) + 'x';
-      followingBox.style.color = getMultiplierColor(following);
+        multiplier.style.color = 'var(--pink)';
 
-      document.getElementById('followingRoundLabel').textContent =
-        `Round #${data.followingRoundId ?? '--'}`;
-
-      const item = document.createElement('div');
-
-      item.textContent =
-        `[Round #${data.roundId ?? '--'}] Current: ${current.toFixed(2)}x | ` +
-        `Next (#${data.followingRoundId ?? '--'}): ${following.toFixed(2)}x`;
-
-      const feed = document.getElementById('feed');
-
-      if (feed.firstElementChild &&
-          feed.firstElementChild.textContent === 'Waiting for crash history...') {
-        feed.replaceChildren();
-      }
-
-      feed.prepend(item);
-
-      // Keep the most recent 50 entries.
-      while (feed.children.length > 50) {
-        feed.lastElementChild.remove();
-      }
-    });
+        row.appendChild(round);
+        row.appendChild(multiplier);
+        historyFeedElement.appendChild(row);
+      });
+    }
   </script>
 </body>
 </html>
-```
