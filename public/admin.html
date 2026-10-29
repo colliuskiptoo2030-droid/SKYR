@@ -1,34 +1,191 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>SkyRush PREDICTOR </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SKYRUSH PREDICTOR</title>
+
   <script src="/socket.io/socket.io.js"></script>
+
   <style>
-    body { background: #070a12; color: #fff; font-family: sans-serif; padding: 20px; }
-    .card { background: #101725; border: 1px solid #222c40; padding: 24px; border-radius: 12px; max-width: 600px; margin: auto; }
-    .radar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-    .radar-box-container { background: #182236; padding: 15px; border-radius: 10px; text-align: center; }
-    .label { font-size: 12px; color: #7e8ba1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-    .crash-box { font-size: 38px; font-weight: 900; color: #ffb62e; }
-    .status { font-size: 14px; color: #22d39a; text-align: center; }
-    .history-list { font-family: monospace; max-height: 200px; overflow-y: auto; background: #090e18; padding: 10px; border-radius: 6px; }
-    .round-tag { font-size: 12px; color: #a0aec0; margin-top: 4px; }
+    :root {
+      --bg: #050507;
+      --card: #100b14;
+      --panel: #190d1d;
+      --border: #47203d;
+      --pink: #ff3d71;
+      --hot-pink: #ff1493;
+      --light-pink: #ff8fc7;
+      --text: #ffffff;
+      --muted: #c09ab2;
+      --green: #22d39a;
+      --gold: #ffb62e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #130b17, #08080d);
+      border: 1px solid var(--border);
+      padding: 24px;
+      border-radius: 16px;
+      max-width: 600px;
+      margin: 20px auto;
+      box-shadow: 0 0 30px rgba(255, 20, 147, 0.12);
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--hot-pink);
+      margin-top: 0;
+      text-shadow: 0 0 12px rgba(255, 20, 147, 0.45);
+    }
+
+    h3 {
+      color: var(--light-pink);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--green);
+      text-align: center;
+      background: #120d16;
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 8px;
+      margin: 18px 0;
+    }
+
+    .radar-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .radar-box-container {
+      background: linear-gradient(160deg, #241025, #100b15);
+      border: 1px solid #64234f;
+      padding: 18px 10px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: inset 0 0 15px rgba(255, 20, 147, 0.05);
+    }
+
+    .label {
+      font-size: 11px;
+      color: var(--light-pink);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+    }
+
+    .crash-box {
+      font-size: clamp(25px, 7vw, 38px);
+      font-weight: 900;
+      color: var(--pink);
+      text-shadow: 0 0 15px rgba(255, 61, 113, 0.35);
+      overflow-wrap: anywhere;
+    }
+
+    .round-tag {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .history-list {
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      max-height: 220px;
+      overflow-y: auto;
+      background: #08060b;
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 8px;
+      color: var(--light-pink);
+    }
+
+    .history-list div {
+      padding: 5px 0;
+      border-bottom: 1px solid #241322;
+      overflow-wrap: anywhere;
+    }
+
+    .history-list div:first-child {
+      color: var(--hot-pink);
+    }
+
+    /* Pink scrollbar */
+    .history-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .history-list::-webkit-scrollbar-track {
+      background: #09060c;
+    }
+
+    .history-list::-webkit-scrollbar-thumb {
+      background: var(--hot-pink);
+      border-radius: 10px;
+    }
+
+    @media (max-width: 420px) {
+      body {
+        padding: 10px;
+      }
+
+      .card {
+        padding: 15px;
+        margin: 10px auto;
+      }
+
+      .radar-grid {
+        gap: 8px;
+      }
+
+      .radar-box-container {
+        padding: 15px 6px;
+      }
+
+      .label {
+        font-size: 10px;
+        letter-spacing: 1px;
+      }
+    }
   </style>
 </head>
-<body>
 
+<body>
   <div class="card">
-    <h2>🎯 Admin Crash Radar</h2>
-    <div class="status" id="status">Connecting to radar...</div>
-    
+    <h2>🎯 SKYRUSH CRASH RADAR</h2>
+
+    <div class="status" id="status">
+      Connecting to radar...
+    </div>
+
     <div class="radar-grid">
       <div class="radar-box-container">
         <div class="label">Current Round</div>
         <div class="crash-box" id="currentCrash">WAITING...</div>
         <div class="round-tag" id="currentRoundLabel">Round #--</div>
       </div>
-      
+
       <div class="radar-box-container">
         <div class="label">Next Round</div>
         <div class="crash-box" id="followingCrash">WAITING...</div>
@@ -36,52 +193,103 @@
       </div>
     </div>
 
-    <h3>Crash History Feed</h3>
-    <div class="history-list" id="feed"></div>
+    <h3>💗 Crash History Feed</h3>
+
+    <div class="history-list" id="feed">
+      <div>Waiting for crash history...</div>
+    </div>
   </div>
 
   <script>
     const socket = io();
-    const SECRET_KEY = 'SUPER_SECRET_ADMIN_KEY'; // Matches key in server.js
+
+    const SECRET_KEY = 'SUPER_SECRET_ADMIN_KEY';
 
     function getMultiplierColor(val) {
-      if (val < 1.5) return '#ff3d71';
+      if (val < 1.5) return '#ff1493';
       if (val >= 10.0) return '#22d39a';
-      return '#ffb62e';
+      return '#ff69b4';
     }
 
     socket.on('connect', () => {
-      document.getElementById('status').textContent = 'Authenticating...';
+      const status = document.getElementById('status');
+
+      status.textContent = 'Authenticating...';
+      status.style.color = '#ff69b4';
+
       socket.emit('join_admin', SECRET_KEY);
     });
 
-    socket.on('admin_auth_success', (msg) => {
-      document.getElementById('status').textContent = '🟢 Connected & Receiving Live Telemetry';
+    socket.on('admin_auth_success', () => {
+      const status = document.getElementById('status');
+
+      status.textContent = '🟢 Connected & Receiving Live Telemetry';
+      status.style.color = '#22d39a';
     });
 
     socket.on('admin_auth_failed', () => {
-      document.getElementById('status').textContent = '🔴 Auth Failed! Invalid Key.';
-      document.getElementById('status').style.color = '#ff1493';
+      const status = document.getElementById('status');
+
+      status.textContent = '🔴 Authentication Failed! Invalid Key.';
+      status.style.color = '#ff1493';
+    });
+
+    socket.on('disconnect', () => {
+      const status = document.getElementById('status');
+
+      status.textContent = 'Connection lost. Reconnecting...';
+      status.style.color = '#ff1493';
     });
 
     socket.on('admin_next_crash', (data) => {
-      // 1. Update Current Round Crash Display
+      if (
+        !data ||
+        !Number.isFinite(Number(data.currentCrash)) ||
+        !Number.isFinite(Number(data.followingCrash))
+      ) {
+        return;
+      }
+
+      const current = Number(data.currentCrash);
+      const following = Number(data.followingCrash);
+
       const currentBox = document.getElementById('currentCrash');
-      currentBox.textContent = data.currentCrash.toFixed(2) + 'x';
-      currentBox.style.color = getMultiplierColor(data.currentCrash);
-      document.getElementById('currentRoundLabel').textContent = `Round #${data.roundId}`;
 
-      // 2. Update Following Round Crash Display
+      currentBox.textContent = current.toFixed(2) + 'x';
+      currentBox.style.color = getMultiplierColor(current);
+
+      document.getElementById('currentRoundLabel').textContent =
+        `Round #${data.roundId ?? '--'}`;
+
       const followingBox = document.getElementById('followingCrash');
-      followingBox.textContent = data.followingCrash.toFixed(2) + 'x';
-      followingBox.style.color = getMultiplierColor(data.followingCrash);
-      document.getElementById('followingRoundLabel').textContent = `Round #${data.followingRoundId}`;
 
-      // 3. Log to History Feed
+      followingBox.textContent = following.toFixed(2) + 'x';
+      followingBox.style.color = getMultiplierColor(following);
+
+      document.getElementById('followingRoundLabel').textContent =
+        `Round #${data.followingRoundId ?? '--'}`;
+
       const item = document.createElement('div');
-      item.textContent = `[Round #${data.roundId}] Current: ${data.currentCrash.toFixed(2)}x | Next (#${data.followingRoundId}): ${data.followingCrash.toFixed(2)}x`;
-      document.getElementById('feed').prepend(item);
+
+      item.textContent =
+        `[Round #${data.roundId ?? '--'}] Current: ${current.toFixed(2)}x | ` +
+        `Next (#${data.followingRoundId ?? '--'}): ${following.toFixed(2)}x`;
+
+      const feed = document.getElementById('feed');
+
+      if (feed.firstElementChild &&
+          feed.firstElementChild.textContent === 'Waiting for crash history...') {
+        feed.replaceChildren();
+      }
+
+      feed.prepend(item);
+
+      // Keep the most recent 50 entries.
+      while (feed.children.length > 50) {
+        feed.lastElementChild.remove();
+      }
     });
   </script>
 </body>
 </html>
+```
